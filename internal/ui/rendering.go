@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/TotallyGamerJet/clay"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -150,15 +153,30 @@ func (cls *ClayLayoutSystem) calculatePixelCoverage(x, y, radius float32) float3
 // renderText renderiza texto
 func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.RenderCommand) error {
 	if cls.font == nil {
+		log.Println("Warning: No font available for text rendering")
 		return nil
 	}
 
 	config := &command.RenderData.Text
 	boundingBox := command.BoundingBox
 
+	// Log debugging information
+	log.Printf("renderText: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f",
+		boundingBox.X, boundingBox.Y, boundingBox.Width, boundingBox.Height)
+
 	text := config.StringContents.String()
 	if text == "" {
+		log.Println("Warning: Empty text content")
 		return nil
+	}
+
+	log.Printf("renderText: Text='%s'", text)
+
+	// Check for zero width and skip rendering if so
+	if boundingBox.Width <= 0 || boundingBox.Height <= 0 {
+		log.Printf("Error: Text has zero or negative dimensions: W=%.2f H=%.2f",
+			boundingBox.Width, boundingBox.Height)
+		return fmt.Errorf("Text has zero width")
 	}
 
 	color := sdl.Color{
@@ -168,19 +186,24 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 		A: uint8(config.TextColor.A),
 	}
 
+	log.Printf("renderText: Attempting to render text '%s' with font", text)
 	surface, err := cls.font.RenderUTF8Blended(text, color)
 	if err != nil {
+		log.Printf("Error creating text surface: %v", err)
 		return err
 	}
 	defer surface.Free()
 
+	log.Printf("renderText: Surface created successfully, W=%d H=%d", surface.W, surface.H)
+
 	texture, err := renderer.CreateTextureFromSurface(surface)
 	if err != nil {
+		log.Printf("Error creating texture from surface: %v", err)
 		return err
 	}
 	defer texture.Destroy()
 
-	// Calcular posição centralizada
+	// Calculate centered position
 	textWidth := surface.W
 	textHeight := surface.H
 	containerWidth := int32(boundingBox.Width)

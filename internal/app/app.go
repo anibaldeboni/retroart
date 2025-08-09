@@ -56,7 +56,7 @@ func (app *App) Init() error {
 	app.renderer = renderer
 
 	// Carregar fonte
-	font, err := ttf.OpenFont("assets/fonts/font.ttf", 16)
+	font, err := ttf.OpenFont("assets/Roboto-Condensed.ttf", 16)
 	if err != nil {
 		// Se não conseguir carregar a fonte personalizada, usar uma fonte padrão do sistema
 		fmt.Printf("Aviso: Não foi possível carregar fonte personalizada: %v\n", err)
@@ -72,6 +72,9 @@ func (app *App) Init() error {
 	if err := ui.InitializeClayGlobally(); err != nil {
 		return fmt.Errorf("erro ao inicializar Clay: %v", err)
 	}
+
+	// Configurar fonte global para medição de texto
+	ui.SetGlobalFont(font)
 
 	// Inicializar gerenciador de telas
 	app.screenMgr = screen.NewManager(app.renderer, app.font)

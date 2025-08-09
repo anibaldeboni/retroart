@@ -201,10 +201,7 @@ func renderCheckboxListItems[T any](
 
 	if len(items) > maxVisibleItems {
 		actualVisibleStart = visibleStart
-		actualVisibleEnd = visibleStart + maxVisibleItems
-		if actualVisibleEnd > len(items) {
-			actualVisibleEnd = len(items)
-		}
+		actualVisibleEnd = min(visibleStart+maxVisibleItems, len(items))
 	}
 
 	// Container principal da lista
@@ -272,7 +269,7 @@ func renderCheckboxListItems[T any](
 				}, func() {
 					// Marca de seleção (checkmark) se selecionado
 					if item.Selected {
-						cls.CreateText("✓", TextConfig{
+						cls.CreateText("X", TextConfig{
 							FontSize:  14,
 							TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
 						})

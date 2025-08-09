@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/TotallyGamerJet/clay"
+	"github.com/veandco/go-sdl2/ttf"
 
 	"retroart-sdl2/internal/core"
 )
@@ -15,24 +16,63 @@ import (
 var globalClayContext *clay.Context
 var globalClayArena clay.Arena
 var arenaResetOffset uint64
+var globalFont *ttf.Font // Adicionar referência global da fonte
 
-// simpleMeasureText é uma função de medição de texto básica
-func simpleMeasureText(text clay.StringSlice, config *clay.TextElementConfig, userData unsafe.Pointer) clay.Dimensions {
-	// Função de medição de texto simples - retorna dimensões aproximadas
-	// Em um caso real, você usaria TTF para medir o texto real
-	charWidth := float32(8)   // largura aproximada de um caractere
-	charHeight := float32(16) // altura aproximada de um caractere
-
-	if config != nil && config.FontSize > 0 {
-		// Usar o tamanho da fonte se disponível
-		charHeight = float32(config.FontSize)
-		charWidth = float32(config.FontSize) * 0.6 // relação aproximada largura/altura
+// measureTextWithFont é uma função de medição de texto que usa a fonte TTF real quando disponível
+func measureTextWithFont(text clay.StringSlice, config *clay.TextElementConfig, userData unsafe.Pointer) clay.Dimensions {
+	// Se não há texto, retorna dimensões mínimas válidas
+	if text.Length == 0 {
+		return clay.Dimensions{
+			Width:  1.0,  // Evitar zero width
+			Height: 16.0, // Altura padrão
+		}
 	}
 
+	textString := text.String()
+	if textString == "" {
+		return clay.Dimensions{
+			Width:  1.0,
+			Height: 16.0,
+		}
+	}
+
+	// Tentar usar a fonte TTF global se disponível
+	if globalFont != nil {
+		// Usar TTF.SizeUTF8 para medição real do texto
+		w, h, err := globalFont.SizeUTF8(textString)
+		if err == nil && w > 0 && h > 0 {
+			return clay.Dimensions{
+				Width:  float32(w),
+				Height: float32(h),
+			}
+		}
+	}
+
+	// Fallback para estimativa se TTF não disponível
+	fontSize := float32(16) // tamanho padrão
+	if config != nil && config.FontSize > 0 {
+		fontSize = float32(config.FontSize)
+	}
+
+	// Calculate dimensions based on font size
+	// Use a more realistic estimation for character width
+	charWidth := fontSize * 0.6 // Approximate ratio for monospace fonts
 	textLength := float32(text.Length)
+
+	width := textLength * charWidth
+	height := fontSize * 1.2 // Add space for ascenders/descenders
+
+	// Ensure dimensions are at least 1 pixel
+	if width < 1.0 {
+		width = 1.0
+	}
+	if height < 1.0 {
+		height = 1.0
+	}
+
 	return clay.Dimensions{
-		Width:  textLength * charWidth,
-		Height: charHeight,
+		Width:  width,
+		Height: height,
 	}
 }
 
@@ -43,26 +83,26 @@ func InitializeClayGlobally() error {
 		return nil
 	}
 
-	// Usar MinMemorySize para calcular o tamanho correto da arena
+	// Use MinMemorySize to calculate the correct arena size
 	arenaSize := clay.MinMemorySize()
 	memory := make([]byte, arenaSize)
 	globalClayArena = clay.CreateArenaWithCapacityAndMemory(memory)
 
 	log.Printf("Creating arena with size: %d bytes", arenaSize)
 
-	// Dimensões do layout
+	// Layout dimensions
 	dimensions := clay.Dimensions{
 		Width:  float32(core.WINDOW_WIDTH),
 		Height: float32(core.WINDOW_HEIGHT),
 	}
 
-	// Inicializar Clay globalmente
+	// Initialize Clay globally
 	globalClayContext = clay.Initialize(globalClayArena, dimensions, clay.ErrorHandler{})
 	if globalClayContext == nil {
 		return fmt.Errorf("Clay.Initialize returned nil context")
 	}
 
-	// Verificar se o contexto atual foi definido corretamente
+	// Check if current context was set correctly
 	currentContext := clay.GetCurrentContext()
 	if currentContext == nil {
 		return fmt.Errorf("Clay current context is nil after initialization")
@@ -70,14 +110,20 @@ func InitializeClayGlobally() error {
 
 	log.Printf("Current context address: %p, global context address: %p", currentContext, globalClayContext)
 
-	// Configurar função de medição de texto simples
-	// Criar um userData dummy para evitar conversão nil
+	// Configure text measurement function
+	// Create dummy userData to avoid nil conversion
 	dummyUserData := make([]byte, 1)
-	clay.SetMeasureTextFunction(simpleMeasureText, unsafe.Pointer(&dummyUserData[0]))
+	clay.SetMeasureTextFunction(measureTextWithFont, unsafe.Pointer(&dummyUserData[0]))
 
-	// Capturar o offset de reset da arena após inicialização
+	// Capture arena reset offset after initialization
 	arenaResetOffset = globalClayArena.NextAllocation
 
 	log.Printf("Clay initialized globally successfully, arenaResetOffset: %d", arenaResetOffset)
 	return nil
+}
+
+// SetGlobalFont configura a fonte global para medição de texto
+func SetGlobalFont(font *ttf.Font) {
+	globalFont = font
+	log.Println("Global font set for text measurement")
 }
