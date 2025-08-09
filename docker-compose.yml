@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  retroart-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retroart-trimui-cross-compiler
+    volumes:
+      # Montar código fonte
+      - .:/workspace
+      # Montar cache do Go modules para acelerar builds
+      - go-mod-cache:/go/pkg/mod
+      # Montar cache de build do Go
+      - go-build-cache:/root/.cache/go-build
+    working_dir: /workspace
+    environment:
+      - CGO_ENABLED=1
+      - GOOS=linux
+      - GOARCH=arm64
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+      - PKG_CONFIG_PATH=/usr/aarch64-linux-gnu/lib/pkgconfig:/opt/trimui-sdl2/lib/pkgconfig
+      - CGO_CFLAGS=-I/usr/aarch64-linux-gnu/include/SDL2 -I/opt/trimui-sdl2/include
+      - CGO_LDFLAGS=-L/usr/aarch64-linux-gnu/lib -L/opt/trimui-sdl2/lib
+    # Manter container ativo para desenvolvimento
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Serviço alternativo para build direto
+  retroart-build:
+    build:
+      context: .
+      dockerfile: Dockerfile  
+    container_name: retroart-trimui-builder-direct
+    volumes:
+      - .:/workspace
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    working_dir: /workspace
+    environment:
+      - CGO_ENABLED=1
+      - GOOS=linux  
+      - GOARCH=arm64
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+      - PKG_CONFIG_PATH=/usr/aarch64-linux-gnu/lib/pkgconfig:/opt/trimui-sdl2/lib/pkgconfig
+      - CGO_CFLAGS=-I/usr/aarch64-linux-gnu/include/SDL2 -I/opt/trimui-sdl2/include
+      - CGO_LDFLAGS=-L/usr/aarch64-linux-gnu/lib -L/opt/trimui-sdl2/lib
+    # Executa o script de build automaticamente
+    command: /usr/local/bin/build-arm64.sh
+
+volumes:
+  go-mod-cache:
+    driver: local
+  go-build-cache:
+    driver: local

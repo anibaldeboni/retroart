@@ -1,0 +1,37 @@
+# Ignorar arquivos desnecessários no build Docker
+
+# Binários compilados
+retroart
+retroart-arm64
+retroart-*
+retroart-sdl2-*
+retroart-trimui-*
+main-sdl2
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos Git
+.git/
+.gitignore
+
+# Arquivos de package
+*.tar.gz
+*.zip
+
+# Cache
+.cache/
