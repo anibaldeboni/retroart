@@ -36,8 +36,8 @@ type ButtonConfig struct {
 func DefaultContainerConfig() ContainerConfig {
 	return ContainerConfig{
 		Sizing: clay.Sizing{
-			Width:  clay.SizingGrow(1),   // Cresce para ocupar espaço disponível no pai
-			Height: clay.SizingFit(0, 0), // Ajusta altura baseado no conteúdo
+			Width:  clay.SizingPercent(1.0), // Cresce para ocupar espaço disponível no pai
+			Height: clay.SizingPercent(1.0), // Ajusta altura baseado no conteúdo
 		},
 		Padding:         clay.PaddingAll(10),
 		ChildGap:        8,

@@ -2,6 +2,7 @@ package screen
 
 import (
 	"log"
+	"os"
 
 	"github.com/TotallyGamerJet/clay"
 	"github.com/veandco/go-sdl2/sdl"
@@ -15,7 +16,7 @@ type Home struct {
 	screenMgr     *Manager
 	claySystem    *ui.ClayLayoutSystem
 	selectedIndex int
-	buttonCount   int
+	buttons       []ButtonDefinition       // Lista de botões com seus comportamentos
 	checkboxList  *ui.CheckboxList[string] // Usando string como tipo genérico
 	focusMode     FocusMode                // Controla se estamos focando botões ou checkbox list
 }
@@ -28,11 +29,21 @@ const (
 	FocusCheckboxList                  // Foco no checkbox list
 )
 
+// ButtonDefinition define um botão com seu comportamento
+type ButtonDefinition struct {
+	ID               string
+	Label            string
+	NormalBgColor    clay.Color
+	FocusedBgColor   clay.Color
+	NormalTextColor  clay.Color
+	FocusedTextColor clay.Color
+	OnClick          func()
+}
+
 func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 	screen := &Home{
 		screenMgr:     screenMgr,
 		selectedIndex: 0,
-		buttonCount:   3,            // próxima tela, sair, teste selecionados
 		focusMode:     FocusButtons, // Inicia focando nos botões
 	}
 
@@ -61,7 +72,59 @@ func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 
 	screen.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
 
+	// Inicializar botões com seus comportamentos
+	screen.initializeButtons()
+
 	return screen
+}
+
+// initializeButtons define os botões e seus comportamentos
+func (hs *Home) initializeButtons() {
+	hs.buttons = []ButtonDefinition{
+		{
+			ID:               "next-button",
+			Label:            "Próxima Tela",
+			NormalBgColor:    clay.Color{R: 50, G: 120, B: 200, A: 200},
+			FocusedBgColor:   clay.Color{R: 30, G: 150, B: 255, A: 255},
+			NormalTextColor:  clay.Color{R: 220, G: 230, B: 255, A: 255},
+			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			OnClick: func() {
+				hs.screenMgr.SetCurrentScreen("second")
+			},
+		},
+		{
+			ID:               "exit-button",
+			Label:            "Sair",
+			NormalBgColor:    clay.Color{R: 200, G: 60, B: 60, A: 180},
+			FocusedBgColor:   clay.Color{R: 255, G: 80, B: 80, A: 255},
+			NormalTextColor:  clay.Color{R: 255, G: 200, B: 200, A: 255},
+			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			OnClick: func() {
+				log.Println("Exit button pressed")
+				os.Exit(0)
+			},
+		},
+		{
+			ID:               "test-selected-button",
+			Label:            "Mostrar Selecionados",
+			NormalBgColor:    clay.Color{R: 120, G: 60, B: 200, A: 180},
+			FocusedBgColor:   clay.Color{R: 150, G: 80, B: 255, A: 255},
+			NormalTextColor:  clay.Color{R: 220, G: 200, B: 255, A: 255},
+			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			OnClick: func() {
+				selected := hs.checkboxList.GetSelectedItems()
+				log.Printf("=== ELEMENTOS SELECIONADOS ===")
+				for i, item := range selected {
+					log.Printf("Item %d: Label='%s', Value='%v'", i+1, item.Label, item.Value)
+				}
+				log.Printf("=== FIM DA LISTA ===")
+
+				// Também testar GetSelectedValues
+				values := hs.checkboxList.GetSelectedValues()
+				log.Printf("Valores selecionados: %v", values)
+			},
+		},
+	}
 }
 
 func (hs *Home) Update() {
@@ -107,18 +170,18 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 			Id: clay.ID("content-container"),
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
-					Width:  clay.SizingPercent(0.6), // 60% de 1200 menos gap (1200*0.6 - 20)
-					Height: clay.SizingPercent(1.0), // Altura disponível (680-40 de padding)
+					Width:  clay.SizingPercent(0.6),
+					Height: clay.SizingPercent(1.0),
 				},
 				Padding:         clay.PaddingAll(20),
 				ChildGap:        15,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 				ChildAlignment: clay.ChildAlignment{
-					X: clay.ALIGN_X_CENTER, // Centralizar botões horizontalmente
+					X: clay.ALIGN_X_CENTER,
 				},
 			},
 			CornerRadius:    clay.CornerRadiusAll(12),
-			BackgroundColor: clay.Color{R: 45, G: 50, B: 65, A: 255}, // Fundo do painel direito
+			BackgroundColor: clay.Color{R: 45, G: 50, B: 65, A: 255},
 		}, func() {
 
 			// Título
@@ -127,7 +190,7 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 				Layout: clay.LayoutConfig{
 					Sizing: clay.Sizing{
 						Width:  clay.SizingPercent(1.0),
-						Height: clay.SizingFit(0, 50),
+						Height: clay.SizingFit(0, 100),
 					},
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
@@ -145,10 +208,6 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("subtitle-text"),
 				Layout: clay.LayoutConfig{
-					// Sizing: clay.Sizing{
-					// 	Width:  clay.SizingGrow(1),
-					// 	Height: clay.SizingFit(0, 0),
-					// },
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
 					},
@@ -164,10 +223,6 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("buttons-container"),
 				Layout: clay.LayoutConfig{
-					Sizing: clay.Sizing{
-						Width:  clay.SizingGrow(1),
-						Height: clay.SizingFit(0, 0),
-					},
 					Padding:         clay.PaddingAll(15),
 					ChildGap:        15,
 					LayoutDirection: clay.TOP_TO_BOTTOM,
@@ -177,53 +232,21 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 				},
 			}, func() {
 
-				// Botão próxima tela - Estilo moderno azul
-				nextButtonConfig := ui.DefaultButtonConfig()
-				if hs.selectedIndex == 0 && hs.focusMode == FocusButtons {
-					nextButtonConfig.BackgroundColor = clay.Color{R: 30, G: 150, B: 255, A: 255} // Azul vibrante focado
-					nextButtonConfig.TextColor = clay.Color{R: 255, G: 255, B: 255, A: 255}      // Texto branco
-				} else {
-					nextButtonConfig.BackgroundColor = clay.Color{R: 50, G: 120, B: 200, A: 200} // Azul suave normal
-					nextButtonConfig.TextColor = clay.Color{R: 220, G: 230, B: 255, A: 255}      // Texto azul claro
-				}
-				hs.claySystem.CreateButton("next-button", "Próxima Tela", nextButtonConfig, func() {
-					hs.screenMgr.SetCurrentScreen("second")
-				})
+				// Renderizar botões dinamicamente
+				for i, button := range hs.buttons {
+					buttonConfig := ui.DefaultButtonConfig()
 
-				// Botão sair - Estilo moderno vermelho
-				exitButtonConfig := ui.DefaultButtonConfig()
-				if hs.selectedIndex == 1 && hs.focusMode == FocusButtons {
-					exitButtonConfig.BackgroundColor = clay.Color{R: 255, G: 80, B: 80, A: 255} // Vermelho vibrante focado
-					exitButtonConfig.TextColor = clay.Color{R: 255, G: 255, B: 255, A: 255}     // Texto branco
-				} else {
-					exitButtonConfig.BackgroundColor = clay.Color{R: 200, G: 60, B: 60, A: 180} // Vermelho suave normal
-					exitButtonConfig.TextColor = clay.Color{R: 255, G: 200, B: 200, A: 255}     // Texto vermelho claro
-				}
-				hs.claySystem.CreateButton("exit-button", "Sair", exitButtonConfig, func() {
-					log.Println("Exit button pressed")
-				})
-
-				// Botão de teste - Estilo moderno roxo/violeta
-				testButtonConfig := ui.DefaultButtonConfig()
-				if hs.selectedIndex == 2 && hs.focusMode == FocusButtons {
-					testButtonConfig.BackgroundColor = clay.Color{R: 150, G: 80, B: 255, A: 255} // Roxo vibrante focado
-					testButtonConfig.TextColor = clay.Color{R: 255, G: 255, B: 255, A: 255}      // Texto branco
-				} else {
-					testButtonConfig.BackgroundColor = clay.Color{R: 120, G: 60, B: 200, A: 180} // Roxo suave normal
-					testButtonConfig.TextColor = clay.Color{R: 220, G: 200, B: 255, A: 255}      // Texto roxo claro
-				}
-				hs.claySystem.CreateButton("test-selected-button", "Mostrar Selecionados", testButtonConfig, func() {
-					selected := hs.checkboxList.GetSelectedItems()
-					log.Printf("=== ELEMENTOS SELECIONADOS ===")
-					for i, item := range selected {
-						log.Printf("Item %d: Label='%s', Value='%v'", i+1, item.Label, item.Value)
+					// Aplicar cores baseadas no foco
+					if hs.selectedIndex == i && hs.focusMode == FocusButtons {
+						buttonConfig.BackgroundColor = button.FocusedBgColor
+						buttonConfig.TextColor = button.FocusedTextColor
+					} else {
+						buttonConfig.BackgroundColor = button.NormalBgColor
+						buttonConfig.TextColor = button.NormalTextColor
 					}
-					log.Printf("=== FIM DA LISTA ===")
 
-					// Também testar GetSelectedValues
-					values := hs.checkboxList.GetSelectedValues()
-					log.Printf("Valores selecionados: %v", values)
-				})
+					hs.claySystem.CreateButton(button.ID, button.Label, buttonConfig, button.OnClick)
+				}
 			})
 		})
 	})
@@ -249,7 +272,7 @@ func (hs *Home) handleButtonInput(input InputType) {
 			hs.selectedIndex--
 		}
 	case InputDown:
-		if hs.selectedIndex < hs.buttonCount-1 {
+		if hs.selectedIndex < len(hs.buttons)-1 {
 			hs.selectedIndex++
 		}
 	case InputLeft:
@@ -258,7 +281,10 @@ func (hs *Home) handleButtonInput(input InputType) {
 		hs.checkboxList.SetFocused(true)
 		log.Println("Foco movido para checkbox list")
 	case InputConfirm:
-		hs.executeCurrentButton()
+		// Executar a função OnClick do botão selecionado
+		if hs.selectedIndex >= 0 && hs.selectedIndex < len(hs.buttons) {
+			hs.buttons[hs.selectedIndex].OnClick()
+		}
 	}
 }
 
@@ -277,26 +303,6 @@ func (hs *Home) handleCheckboxListInput(input InputType) {
 		hs.focusMode = FocusButtons
 		hs.checkboxList.SetFocused(false)
 		log.Println("Foco movido para botões")
-	}
-}
-
-func (hs *Home) executeCurrentButton() {
-	switch hs.selectedIndex {
-	case 0: // Próxima tela
-		hs.screenMgr.SetCurrentScreen("second")
-	case 1: // Sair
-		log.Println("Exit button pressed from Home screen")
-	case 2: // Mostrar selecionados
-		selected := hs.checkboxList.GetSelectedItems()
-		log.Printf("=== ELEMENTOS SELECIONADOS ===")
-		for i, item := range selected {
-			log.Printf("Item %d: Label='%s', Value='%v'", i+1, item.Label, item.Value)
-		}
-		log.Printf("=== FIM DA LISTA ===")
-
-		// Também testar GetSelectedValues
-		values := hs.checkboxList.GetSelectedValues()
-		log.Printf("Valores selecionados: %v", values)
 	}
 }
 
