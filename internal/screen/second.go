@@ -71,10 +71,7 @@ func (ss *Second) Render(renderer *sdl.Renderer) {
 			})
 		})
 
-		// Botão de voltar
-		backButtonConfig := ui.DefaultButtonConfig()
-
-		ss.claySystem.CreateButton("back-button", "Voltar", backButtonConfig, func() {
+		ss.claySystem.CreateButton("back-button", "Voltar", ui.PrimaryButtonConfig(), true, func() {
 			ss.screenMgr.SetCurrentScreen("home")
 		})
 	})

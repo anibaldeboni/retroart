@@ -28,7 +28,7 @@ func (cls *ClayLayoutSystem) renderRectangle(renderer *sdl.Renderer, command *cl
 
 	if hasRoundedCorners {
 		// Renderizar retângulo com cantos arredondados
-		return cls.renderRoundedRectangle(renderer, boundingBox, cornerRadius, config.BackgroundColor)
+		return cls.renderRoundedRectangle(renderer, boundingBox, cornerRadius)
 	} else {
 		// Renderizar retângulo normal
 		rect := sdl.Rect{
@@ -42,7 +42,7 @@ func (cls *ClayLayoutSystem) renderRectangle(renderer *sdl.Renderer, command *cl
 }
 
 // renderRoundedRectangle renderiza um retângulo com cantos arredondados
-func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boundingBox clay.BoundingBox, cornerRadius clay.CornerRadius, color clay.Color) error {
+func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boundingBox clay.BoundingBox, cornerRadius clay.CornerRadius) error {
 	x := int32(boundingBox.X)
 	y := int32(boundingBox.Y)
 	w := int32(boundingBox.Width)

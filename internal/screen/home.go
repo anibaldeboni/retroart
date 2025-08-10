@@ -33,7 +33,7 @@ const (
 type ButtonDefinition struct {
 	ID      string
 	Label   string
-	Config  ui.StatefulButtonConfig
+	Config  ui.ButtonConfig
 	OnClick func()
 }
 
@@ -120,7 +120,6 @@ func (hs *Home) Update() {
 }
 
 func (hs *Home) Render(renderer *sdl.Renderer) {
-	// Iniciar layout Clay
 	hs.claySystem.BeginLayout()
 
 	// Layout principal horizontal com dimensões fixas no raiz para estabelecer contexto
@@ -223,7 +222,7 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 				// Renderizar botões dinamicamente usando CreateStatefulButton
 				for i, button := range hs.buttons {
 					isFocused := hs.selectedIndex == i && hs.focusMode == FocusButtons
-					hs.claySystem.CreateStatefulButton(button.ID, button.Label, button.Config, isFocused, button.OnClick)
+					hs.claySystem.CreateButton(button.ID, button.Label, button.Config, isFocused, button.OnClick)
 				}
 			})
 		})
