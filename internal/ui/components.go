@@ -30,6 +30,24 @@ type ButtonConfig struct {
 	CornerRadius    float32
 }
 
+// StatefulButtonConfig contém configurações para diferentes estados do botão
+type StatefulButtonConfig struct {
+	Sizing       clay.Sizing
+	Padding      clay.Padding
+	TextSize     uint16
+	CornerRadius float32
+
+	// Estados normal e focado
+	Normal  ButtonState
+	Focused ButtonState
+}
+
+// ButtonState define a aparência de um estado específico do botão
+type ButtonState struct {
+	BackgroundColor clay.Color
+	TextColor       clay.Color
+}
+
 // Funções helper para criar configurações comuns
 
 // DefaultContainerConfig retorna uma configuração padrão para containers
@@ -58,6 +76,65 @@ func DefaultButtonConfig() ButtonConfig {
 		TextSize:        16,
 		CornerRadius:    12, // Bordas mais arredondadas
 	}
+}
+
+// DefaultStatefulButtonConfig retorna uma configuração padrão para botões com estado
+func DefaultStatefulButtonConfig() StatefulButtonConfig {
+	return StatefulButtonConfig{
+		Sizing: clay.Sizing{
+			Width:  clay.SizingFixed(220),
+			Height: clay.SizingFixed(45),
+		},
+		Padding:      clay.Padding{Left: 20, Right: 20, Top: 12, Bottom: 12},
+		TextSize:     16,
+		CornerRadius: 12,
+		Normal: ButtonState{
+			BackgroundColor: clay.Color{R: 70, G: 130, B: 220, A: 200},
+			TextColor:       clay.Color{R: 220, G: 230, B: 255, A: 255},
+		},
+		Focused: ButtonState{
+			BackgroundColor: clay.Color{R: 30, G: 150, B: 255, A: 255},
+			TextColor:       clay.Color{R: 255, G: 255, B: 255, A: 255},
+		},
+	}
+}
+
+// CreateStatefulButtonConfig cria uma configuração personalizada para botão com estado
+func CreateStatefulButtonConfig(normalBg, focusedBg, normalText, focusedText clay.Color) StatefulButtonConfig {
+	config := DefaultStatefulButtonConfig()
+	config.Normal.BackgroundColor = normalBg
+	config.Normal.TextColor = normalText
+	config.Focused.BackgroundColor = focusedBg
+	config.Focused.TextColor = focusedText
+	return config
+}
+
+// Configurações predefinidas para diferentes tipos de botões
+func PrimaryButtonConfig() StatefulButtonConfig {
+	return CreateStatefulButtonConfig(
+		clay.Color{R: 50, G: 120, B: 200, A: 200},  // Azul normal
+		clay.Color{R: 30, G: 150, B: 255, A: 255},  // Azul vibrante focado
+		clay.Color{R: 220, G: 230, B: 255, A: 255}, // Texto azul claro
+		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
+	)
+}
+
+func DangerButtonConfig() StatefulButtonConfig {
+	return CreateStatefulButtonConfig(
+		clay.Color{R: 200, G: 60, B: 60, A: 180},   // Vermelho normal
+		clay.Color{R: 255, G: 80, B: 80, A: 255},   // Vermelho vibrante focado
+		clay.Color{R: 255, G: 200, B: 200, A: 255}, // Texto vermelho claro
+		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
+	)
+}
+
+func SecondaryButtonConfig() StatefulButtonConfig {
+	return CreateStatefulButtonConfig(
+		clay.Color{R: 120, G: 60, B: 200, A: 180},  // Roxo normal
+		clay.Color{R: 150, G: 80, B: 255, A: 255},  // Roxo vibrante focado
+		clay.Color{R: 220, G: 200, B: 255, A: 255}, // Texto roxo claro
+		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
+	)
 }
 
 func DefaultTextConfig() TextConfig {
@@ -140,4 +217,45 @@ func (cls *ClayLayoutSystem) CreateButton(id string, text string, config ButtonC
 		})
 	})
 	log.Printf("Button created successfully: %s", id)
+}
+
+// CreateStatefulButton cria um botão que gerencia seus próprios estados
+func (cls *ClayLayoutSystem) CreateStatefulButton(id string, text string, config StatefulButtonConfig, isFocused bool, onClick func()) {
+	if !cls.enabled || !cls.isActive {
+		log.Printf("Clay not enabled or not active, skipping CreateStatefulButton: %s", id)
+		return
+	}
+
+	// Determinar estado atual baseado no foco
+	var currentState ButtonState
+	if isFocused {
+		currentState = config.Focused
+	} else {
+		currentState = config.Normal
+	}
+
+	log.Printf("Creating stateful button: %s (focused: %t)", id, isFocused)
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID(id),
+		Layout: clay.LayoutConfig{
+			Sizing: clay.Sizing{
+				Width:  config.Sizing.Width,
+				Height: config.Sizing.Height,
+			},
+			Padding: config.Padding,
+			ChildAlignment: clay.ChildAlignment{
+				X: clay.ALIGN_X_CENTER,
+				Y: clay.ALIGN_Y_CENTER,
+			},
+		},
+		CornerRadius:    clay.CornerRadiusAll(config.CornerRadius),
+		BackgroundColor: currentState.BackgroundColor,
+	}, func() {
+		// Texto do botão centralizado com cor do estado atual
+		cls.CreateText(text, TextConfig{
+			FontSize:  config.TextSize,
+			TextColor: currentState.TextColor,
+		})
+	})
+	log.Printf("Stateful button created successfully: %s", id)
 }

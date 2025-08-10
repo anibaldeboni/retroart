@@ -31,13 +31,10 @@ const (
 
 // ButtonDefinition define um botão com seu comportamento
 type ButtonDefinition struct {
-	ID               string
-	Label            string
-	NormalBgColor    clay.Color
-	FocusedBgColor   clay.Color
-	NormalTextColor  clay.Color
-	FocusedTextColor clay.Color
-	OnClick          func()
+	ID      string
+	Label   string
+	Config  ui.StatefulButtonConfig
+	OnClick func()
 }
 
 func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
@@ -82,35 +79,26 @@ func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 func (hs *Home) initializeButtons() {
 	hs.buttons = []ButtonDefinition{
 		{
-			ID:               "next-button",
-			Label:            "Próxima Tela",
-			NormalBgColor:    clay.Color{R: 50, G: 120, B: 200, A: 200},
-			FocusedBgColor:   clay.Color{R: 30, G: 150, B: 255, A: 255},
-			NormalTextColor:  clay.Color{R: 220, G: 230, B: 255, A: 255},
-			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			ID:     "next-button",
+			Label:  "Próxima Tela",
+			Config: ui.PrimaryButtonConfig(),
 			OnClick: func() {
 				hs.screenMgr.SetCurrentScreen("second")
 			},
 		},
 		{
-			ID:               "exit-button",
-			Label:            "Sair",
-			NormalBgColor:    clay.Color{R: 200, G: 60, B: 60, A: 180},
-			FocusedBgColor:   clay.Color{R: 255, G: 80, B: 80, A: 255},
-			NormalTextColor:  clay.Color{R: 255, G: 200, B: 200, A: 255},
-			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			ID:     "exit-button",
+			Label:  "Sair",
+			Config: ui.DangerButtonConfig(),
 			OnClick: func() {
 				log.Println("Exit button pressed")
 				os.Exit(0)
 			},
 		},
 		{
-			ID:               "test-selected-button",
-			Label:            "Mostrar Selecionados",
-			NormalBgColor:    clay.Color{R: 120, G: 60, B: 200, A: 180},
-			FocusedBgColor:   clay.Color{R: 150, G: 80, B: 255, A: 255},
-			NormalTextColor:  clay.Color{R: 220, G: 200, B: 255, A: 255},
-			FocusedTextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			ID:     "test-selected-button",
+			Label:  "Mostrar Selecionados",
+			Config: ui.SecondaryButtonConfig(),
 			OnClick: func() {
 				selected := hs.checkboxList.GetSelectedItems()
 				log.Printf("=== ELEMENTOS SELECIONADOS ===")
@@ -232,20 +220,10 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 				},
 			}, func() {
 
-				// Renderizar botões dinamicamente
+				// Renderizar botões dinamicamente usando CreateStatefulButton
 				for i, button := range hs.buttons {
-					buttonConfig := ui.DefaultButtonConfig()
-
-					// Aplicar cores baseadas no foco
-					if hs.selectedIndex == i && hs.focusMode == FocusButtons {
-						buttonConfig.BackgroundColor = button.FocusedBgColor
-						buttonConfig.TextColor = button.FocusedTextColor
-					} else {
-						buttonConfig.BackgroundColor = button.NormalBgColor
-						buttonConfig.TextColor = button.NormalTextColor
-					}
-
-					hs.claySystem.CreateButton(button.ID, button.Label, buttonConfig, button.OnClick)
+					isFocused := hs.selectedIndex == i && hs.focusMode == FocusButtons
+					hs.claySystem.CreateStatefulButton(button.ID, button.Label, button.Config, isFocused, button.OnClick)
 				}
 			})
 		})
