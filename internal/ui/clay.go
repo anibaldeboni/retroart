@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
 	"unsafe"
@@ -20,7 +20,6 @@ var globalFont *ttf.Font // Adicionar referência global da fonte
 
 // measureTextWithFont é uma função de medição de texto que usa a fonte TTF real quando disponível
 func measureTextWithFont(text clay.StringSlice, config *clay.TextElementConfig, userData unsafe.Pointer) clay.Dimensions {
-	// Se não há texto, retorna dimensões mínimas válidas
 	if text.Length == 0 {
 		return clay.Dimensions{
 			Width:  1.0,  // Evitar zero width
@@ -99,13 +98,13 @@ func InitializeClayGlobally() error {
 	// Initialize Clay globally
 	globalClayContext = clay.Initialize(globalClayArena, dimensions, clay.ErrorHandler{})
 	if globalClayContext == nil {
-		return fmt.Errorf("Clay.Initialize returned nil context")
+		return errors.New("Clay.Initialize returned nil context")
 	}
 
 	// Check if current context was set correctly
 	currentContext := clay.GetCurrentContext()
 	if currentContext == nil {
-		return fmt.Errorf("Clay current context is nil after initialization")
+		return errors.New("Clay current context is nil after initialization")
 	}
 
 	log.Printf("Current context address: %p, global context address: %p", currentContext, globalClayContext)

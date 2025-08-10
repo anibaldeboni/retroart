@@ -32,16 +32,17 @@ type ButtonConfig struct {
 
 // Funções helper para criar configurações comuns
 
+// DefaultContainerConfig retorna uma configuração padrão para containers
 func DefaultContainerConfig() ContainerConfig {
 	return ContainerConfig{
 		Sizing: clay.Sizing{
-			Width:  clay.SizingGrow(0),
-			Height: clay.SizingGrow(0),
+			Width:  clay.SizingGrow(1),   // Cresce para ocupar espaço disponível no pai
+			Height: clay.SizingFit(0, 0), // Ajusta altura baseado no conteúdo
 		},
-		Padding:         clay.PaddingAll(0),
-		ChildGap:        0,
+		Padding:         clay.PaddingAll(10),
+		ChildGap:        8,
 		LayoutDirection: clay.TOP_TO_BOTTOM,
-		BackgroundColor: clay.Color{R: 0, G: 0, B: 0, A: 0},
+		BackgroundColor: clay.Color{R: 40, G: 42, B: 54, A: 255}, // Cor de fundo padrão
 	}
 }
 

@@ -113,6 +113,10 @@ func (cls *ClayLayoutSystem) RenderClayCommands(renderer *sdl.Renderer, commands
 
 		switch command.CommandType {
 		case clay.RENDER_COMMAND_TYPE_RECTANGLE:
+			config := &command.RenderData.Rectangle
+			log.Printf("Clay Rectangle Command %d: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f, Color R=%.0f G=%.0f B=%.0f A=%.0f",
+				i, command.BoundingBox.X, command.BoundingBox.Y, command.BoundingBox.Width, command.BoundingBox.Height,
+				config.BackgroundColor.R, config.BackgroundColor.G, config.BackgroundColor.B, config.BackgroundColor.A)
 			err := cls.renderRectangle(renderer, command)
 			if err != nil {
 				log.Printf("Error rendering rectangle: %v", err)

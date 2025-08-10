@@ -7,8 +7,6 @@ import (
 	"github.com/TotallyGamerJet/clay"
 )
 
-// Estruturas para CheckboxList (versão genérica)
-
 // CheckboxListItem é um item da lista com tipo genérico para Value
 type CheckboxListItem[T any] struct {
 	Label    string
@@ -146,111 +144,71 @@ func (cl *CheckboxList[T]) ToggleFocusedItem() {
 	cl.ToggleItem(cl.FocusedIndex)
 }
 
-// CreateCheckboxList renderiza uma lista com checkboxes
-func (cls *ClayLayoutSystem) CreateCheckboxList(checkboxList interface{}) {
-	if !cls.enabled || !cls.isActive {
-		log.Printf("Clay not enabled or not active, skipping CreateCheckboxList")
-		return
-	}
-
-	// Usa type assertion para acessar propriedades comuns
-	switch cbl := checkboxList.(type) {
-	case *CheckboxList[string]:
-		renderCheckboxListItems(cls, cbl.ID, cbl.Items, cbl.Config, cbl.HasFocus, cbl.FocusedIndex, cbl.VisibleStart, cbl.VisibleEnd)
-		// Atualizar posições visíveis
-		maxVisibleItems := int(cbl.Config.MaxHeight / cbl.Config.ItemHeight)
-		cbl.VisibleStart = cbl.ScrollOffset
-		cbl.VisibleEnd = cbl.ScrollOffset + maxVisibleItems
-		if cbl.VisibleEnd > len(cbl.Items) {
-			cbl.VisibleEnd = len(cbl.Items)
-		}
-
-	case *CheckboxList[int]:
-		renderCheckboxListItems(cls, cbl.ID, cbl.Items, cbl.Config, cbl.HasFocus, cbl.FocusedIndex, cbl.VisibleStart, cbl.VisibleEnd)
-		// Atualizar posições visíveis
-		maxVisibleItems := int(cbl.Config.MaxHeight / cbl.Config.ItemHeight)
-		cbl.VisibleStart = cbl.ScrollOffset
-		cbl.VisibleEnd = cbl.ScrollOffset + maxVisibleItems
-		if cbl.VisibleEnd > len(cbl.Items) {
-			cbl.VisibleEnd = len(cbl.Items)
-		}
-
-	default:
-		log.Printf("Unsupported CheckboxList type: %T", checkboxList)
-		return
-	}
-}
-
-// Função auxiliar genérica para renderizar itens do checkbox list
-func renderCheckboxListItems[T any](
-	cls *ClayLayoutSystem,
-	id string,
-	items []CheckboxListItem[T],
-	config CheckboxListConfig,
-	hasFocus bool,
-	focusedIndex int,
-	visibleStart int,
-	visibleEnd int,
-) {
-	log.Printf("Creating checkbox list: %s", id)
+// RenderCheckboxList renderiza uma lista com checkboxes e retorna se foi criada com sucesso
+func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem) {
+	log.Printf("Creating checkbox list: %s", cl.ID)
 
 	// Atualizar posições visíveis baseado no scroll
-	maxVisibleItems := int(config.MaxHeight / config.ItemHeight)
+	maxVisibleItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
 	actualVisibleStart := 0
-	actualVisibleEnd := len(items)
+	actualVisibleEnd := len(cl.Items)
 
-	if len(items) > maxVisibleItems {
-		actualVisibleStart = visibleStart
-		actualVisibleEnd = min(visibleStart+maxVisibleItems, len(items))
+	if len(cl.Items) > maxVisibleItems {
+		actualVisibleStart = cl.VisibleStart
+		actualVisibleEnd = min(cl.VisibleStart+maxVisibleItems, len(cl.Items))
 	}
 
-	// Container principal da lista
+	// Container principal da lista com dimensões fixas baseadas no container pai
 	clay.UI()(clay.ElementDeclaration{
-		Id: clay.ID(id),
+		Id: clay.ID(cl.ID),
 		Layout: clay.LayoutConfig{
-			Sizing:          config.Sizing,
-			Padding:         config.Padding,
-			ChildGap:        config.ChildGap,
+			Sizing: clay.Sizing{
+				Width:  cl.Config.Sizing.Width,
+				Height: cl.Config.Sizing.Height,
+			},
+			Padding:         cl.Config.Padding,
+			ChildGap:        cl.Config.ChildGap,
 			LayoutDirection: clay.TOP_TO_BOTTOM,
 		},
 		CornerRadius:    clay.CornerRadiusAll(12), // Bordas mais arredondadas
-		BackgroundColor: config.BackgroundColor,
+		BackgroundColor: cl.Config.BackgroundColor,
 	}, func() {
 		// Renderizar apenas os itens visíveis
 		for i := actualVisibleStart; i < actualVisibleEnd; i++ {
-			item := items[i]
-			itemID := fmt.Sprintf("%s-item-%d", id, i)
+			item := cl.Items[i]
+			itemID := fmt.Sprintf("%s-item-%d", cl.ID, i)
 
 			// Determinar cor de fundo do item (destaque se em foco)
 			itemBgColor := clay.Color{R: 0, G: 0, B: 0, A: 0} // Transparente por padrão
-			if hasFocus && focusedIndex == i {
+			if cl.HasFocus && cl.FocusedIndex == i {
 				// Item em foco - gradiente azul moderno
-				itemBgColor = clay.Color{R: 60, G: 120, B: 200, A: 180}
+				itemBgColor = clay.Color{R: 60, G: 120, B: 200, A: 255} // Alpha máximo
+				log.Printf("Item %d (focused): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
 			} else if item.Selected {
 				// Item selecionado - fundo verde suave
-				itemBgColor = clay.Color{R: 40, G: 120, B: 80, A: 100}
+				itemBgColor = clay.Color{R: 40, G: 120, B: 80, A: 255} // Alpha máximo
+				log.Printf("Item %d (selected): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
+			} else {
+				log.Printf("Item %d (normal): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
 			}
 
-			// Container do item
+			// Container do item com dimensões fixas adequadas
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID(itemID),
 				Layout: clay.LayoutConfig{
 					Sizing: clay.Sizing{
-						Width:  clay.SizingGrow(0),
-						Height: clay.SizingFixed(config.ItemHeight),
+						Width: clay.SizingPercent(1.0),
 					},
-					Padding:         clay.Padding{Left: 15, Right: 15, Top: 8, Bottom: 8},
+					// Padding:         clay.Padding{Left: 15, Right: 15, Top: 12, Bottom: 12},
+					Padding:         clay.PaddingAll(12),
 					ChildGap:        12,
 					LayoutDirection: clay.LEFT_TO_RIGHT,
-					ChildAlignment: clay.ChildAlignment{
-						Y: clay.ALIGN_Y_CENTER,
-					},
 				},
-				CornerRadius:    clay.CornerRadiusAll(8), // Bordas arredondadas nos itens
+				CornerRadius:    clay.CornerRadiusAll(10), // Bordas arredondadas nos itens
 				BackgroundColor: itemBgColor,
 			}, func() {
 				// Checkbox
-				checkboxID := fmt.Sprintf("%s-checkbox-%d", id, i)
+				checkboxID := fmt.Sprintf("%s-checkbox-%d", cl.ID, i)
 				checkboxColor := clay.Color{R: 60, G: 70, B: 85, A: 255} // Cinza escuro moderno
 				if item.Selected {
 					checkboxColor = clay.Color{R: 30, G: 180, B: 120, A: 255} // Verde moderno vibrante
@@ -260,8 +218,12 @@ func renderCheckboxListItems[T any](
 					Id: clay.ID(checkboxID),
 					Layout: clay.LayoutConfig{
 						Sizing: clay.Sizing{
-							Width:  clay.SizingFixed(config.CheckboxSize),
-							Height: clay.SizingFixed(config.CheckboxSize),
+							Width:  clay.SizingFixed(cl.Config.CheckboxSize),
+							Height: clay.SizingFixed(cl.Config.CheckboxSize),
+						},
+						ChildAlignment: clay.ChildAlignment{
+							X: clay.ALIGN_X_CENTER,
+							Y: clay.ALIGN_Y_CENTER,
 						},
 					},
 					CornerRadius:    clay.CornerRadiusAll(4), // Checkbox ligeiramente arredondado
@@ -269,16 +231,17 @@ func renderCheckboxListItems[T any](
 				}, func() {
 					// Marca de seleção (checkmark) se selecionado
 					if item.Selected {
-						cls.CreateText("X", TextConfig{
-							FontSize:  14,
+						// Container adicional para melhor controle de posicionamento
+						claySystem.CreateText("◾", TextConfig{
+							FontSize:  25,
 							TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
 						})
 					}
 				})
 
-				// Label do item
+				// Label do item - container para controlar largura e quebra de texto
 				labelColor := clay.Color{R: 220, G: 230, B: 245, A: 255} // Branco azulado suave por padrão
-				if hasFocus && focusedIndex == i {
+				if cl.HasFocus && cl.FocusedIndex == i {
 					// Texto mais brilhante quando em foco
 					labelColor = clay.Color{R: 255, G: 255, B: 255, A: 255} // Branco puro
 				} else if item.Selected {
@@ -286,30 +249,51 @@ func renderCheckboxListItems[T any](
 					labelColor = clay.Color{R: 180, G: 255, B: 200, A: 255}
 				}
 
-				cls.CreateText(item.Label, TextConfig{
-					FontSize:  15, // Fonte ligeiramente maior
-					TextColor: labelColor,
+				// Container para o texto com largura fixa no layout horizontal
+				labelContainerID := fmt.Sprintf("%s-label-%d", cl.ID, i)
+				clay.UI()(clay.ElementDeclaration{
+					Id: clay.ID(labelContainerID),
+					Layout: clay.LayoutConfig{
+						Sizing: clay.Sizing{
+							Width:  clay.SizingPercent(1.0),
+							Height: clay.SizingPercent(1.0),
+						},
+						LayoutDirection: clay.TOP_TO_BOTTOM,
+						ChildAlignment: clay.ChildAlignment{
+							Y: clay.ALIGN_Y_CENTER,
+						},
+					},
+				}, func() {
+					claySystem.CreateText(item.Label, TextConfig{
+						FontSize:  15, // Fonte ligeiramente maior
+						TextColor: labelColor,
+					})
 				})
 			})
 		}
 	})
 
-	log.Printf("Checkbox list created successfully: %s", id)
+	// Atualizar posições visíveis
+	maxItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
+	cl.VisibleStart = cl.ScrollOffset
+	cl.VisibleEnd = min(cl.ScrollOffset+maxItems, len(cl.Items))
+
+	log.Printf("Checkbox list created successfully: %s", cl.ID)
 }
 
-// DefaultCheckboxListConfig retorna uma configuração padrão para CheckboxList
+// DefaultCheckboxListConfig retorna configuração otimizada para layout automático seguindo padrões Clay
 func DefaultCheckboxListConfig() CheckboxListConfig {
 	return CheckboxListConfig{
 		Sizing: clay.Sizing{
-			Width:  clay.SizingFixed(300),
-			Height: clay.SizingFixed(250),
+			Width: clay.SizingPercent(1.0),
+			// Height: clay.SizingPercent(1.0),
 		},
-		Padding:         clay.PaddingAll(18),
-		ChildGap:        8,
-		BackgroundColor: clay.Color{R: 25, G: 30, B: 40, A: 240}, // Fundo escuro moderno com transparência
-		MaxHeight:       250,
+		Padding:         clay.PaddingAll(10),
+		ChildGap:        5, // Espaçamento maior entre itens para acomodar texto multi-linha
+		BackgroundColor: clay.Color{R: 25, G: 30, B: 40, A: 240},
+		MaxHeight:       600, // Altura máxima aumentada
 		ScrollOffset:    0,
-		CheckboxSize:    18,
-		ItemHeight:      35,
+		CheckboxSize:    25,
+		ItemHeight:      45, // Altura maior para acomodar texto longo
 	}
 }

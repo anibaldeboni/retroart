@@ -7,6 +7,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 
+	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/ui"
 )
 
@@ -38,30 +39,23 @@ func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 	// Criar sistema Clay para esta tela
 	screen.claySystem = ui.NewClayLayoutSystem(renderer, font)
 
-	// Criar dados de teste para o checkbox list
+	// Criar dados de teste para o checkbox list - mais itens para testar sizing dinâmico
 	testItems := []ui.CheckboxListItem[string]{
-		{Label: "Item 1", Value: "value1", Selected: false},
-		{Label: "Item 2", Value: "value2", Selected: true},
-		{Label: "Item 3", Value: "value3", Selected: false},
-		{Label: "Item 4", Value: "value4", Selected: false},
-		{Label: "Item 5", Value: "value5", Selected: true},
-		{Label: "Item 6", Value: "value6", Selected: false},
-		{Label: "Item 7", Value: "value7", Selected: false},
-		{Label: "Item 8", Value: "value8", Selected: false},
+		{Label: "Jogo de Ação Super Aventura", Value: "game1", Selected: false},
+		{Label: "RPG Épico", Value: "game2", Selected: true},
+		{Label: "Plataforma Retrô", Value: "game3", Selected: false},
+		{Label: "Corrida de Velocidade", Value: "game4", Selected: false},
+		{Label: "Puzzle Inteligente", Value: "game5", Selected: true},
+		{Label: "Tiro em Primeira Pessoa", Value: "game6", Selected: false},
+		{Label: "Estratégia em Tempo Real", Value: "game7", Selected: false},
+		{Label: "Simulador de Vida", Value: "game8", Selected: false},
+		{Label: "Aventura Point-and-Click", Value: "game9", Selected: false},
+		{Label: "Luta Arcade Clássica", Value: "game10", Selected: true},
+		{Label: "Música e Ritmo", Value: "game11", Selected: false},
+		{Label: "Terror Psicológico", Value: "game12", Selected: false},
 	}
 
-	screen.checkboxList = ui.NewCheckboxList("test-checkbox-list", testItems, ui.CheckboxListConfig{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingFixed(320),
-			Height: clay.SizingFixed(350),
-		},
-		Padding:         clay.PaddingAll(20),
-		ChildGap:        8,
-		BackgroundColor: clay.Color{R: 30, G: 35, B: 45, A: 240}, // Fundo escuro translúcido moderno
-		ItemHeight:      35,
-		MaxHeight:       350,
-		CheckboxSize:    18,
-	})
+	screen.checkboxList = ui.NewCheckboxList("test-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
 
 	return screen
 }
@@ -74,54 +68,113 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 	// Iniciar layout Clay
 	hs.claySystem.BeginLayout()
 
-	// Container principal
-	hs.claySystem.CreateContainer("main", ui.ContainerConfig{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingGrow(0),
-			Height: clay.SizingGrow(0),
-		},
-		Padding:         clay.PaddingAll(40),
-		ChildGap:        40,
-		LayoutDirection: clay.LEFT_TO_RIGHT,                      // Layout horizontal
-		BackgroundColor: clay.Color{R: 20, G: 25, B: 35, A: 255}, // Fundo principal mais escuro e elegante
-	}, func() {
-		// Checkbox list à esquerda
-		hs.claySystem.CreateCheckboxList(hs.checkboxList)
-
-		// Container para conteúdo principal
-		hs.claySystem.CreateContainer("content", ui.ContainerConfig{
+	// Layout principal horizontal com dimensões fixas no raiz para estabelecer contexto
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID("main-container"),
+		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
-				Width:  clay.SizingGrow(0),
-				Height: clay.SizingGrow(0),
+				Width:  clay.SizingGrow(core.WINDOW_WIDTH),  // Largura da janela menos padding (1280 - 40)
+				Height: clay.SizingGrow(core.WINDOW_HEIGHT), // Altura da janela menos padding (720 - 40)
 			},
-			Padding:         clay.PaddingAll(30),
-			ChildGap:        25,
-			LayoutDirection: clay.TOP_TO_BOTTOM,
-			BackgroundColor: clay.Color{R: 35, G: 40, B: 50, A: 200}, // Fundo com transparência sutil
+			Padding:         clay.PaddingAll(20),
+			ChildGap:        20,
+			LayoutDirection: clay.LEFT_TO_RIGHT, // Layout horizontal
+		},
+		BackgroundColor: clay.Color{R: 32, G: 34, B: 37, A: 255}, // Fundo escuro principal
+	}, func() {
+
+		// Container do checkbox list (proporção 2 de 5 partes = 40%)
+		clay.UI()(clay.ElementDeclaration{
+			Id: clay.ID("checkbox-container"),
+			Layout: clay.LayoutConfig{
+				Sizing: clay.Sizing{
+					Width:  clay.SizingPercent(0.4),
+					Height: clay.SizingPercent(1.0),
+				},
+				Padding:         clay.PaddingAll(10),
+				LayoutDirection: clay.TOP_TO_BOTTOM,
+			},
+			CornerRadius:    clay.CornerRadiusAll(12),
+			BackgroundColor: clay.Color{R: 45, G: 50, B: 65, A: 255},
 		}, func() {
+			// Renderizar checkbox list usando widget
+			hs.checkboxList.RenderCheckboxList(hs.claySystem)
+		})
+
+		// Container de conteúdo (proporção 3 de 5 partes = 60%)
+		clay.UI()(clay.ElementDeclaration{
+			Id: clay.ID("content-container"),
+			Layout: clay.LayoutConfig{
+				Sizing: clay.Sizing{
+					Width:  clay.SizingPercent(0.6), // 60% de 1200 menos gap (1200*0.6 - 20)
+					Height: clay.SizingPercent(1.0), // Altura disponível (680-40 de padding)
+				},
+				Padding:         clay.PaddingAll(20),
+				ChildGap:        15,
+				LayoutDirection: clay.TOP_TO_BOTTOM,
+				ChildAlignment: clay.ChildAlignment{
+					X: clay.ALIGN_X_CENTER, // Centralizar botões horizontalmente
+				},
+			},
+			CornerRadius:    clay.CornerRadiusAll(12),
+			BackgroundColor: clay.Color{R: 45, G: 50, B: 65, A: 255}, // Fundo do painel direito
+		}, func() {
+
 			// Título
-			hs.claySystem.CreateText("RetroArt", ui.TextConfig{
-				FontSize:  32,
-				TextColor: clay.Color{R: 100, G: 200, B: 255, A: 255}, // Azul moderno vibrante
+			clay.UI()(clay.ElementDeclaration{
+				Id: clay.ID("title-text"),
+				Layout: clay.LayoutConfig{
+					// Sizing: clay.Sizing{
+					// 	Width:  clay.SizingGrow(1),
+					// 	Height: clay.SizingFit(0, 0),
+					// },
+					ChildAlignment: clay.ChildAlignment{
+						X: clay.ALIGN_X_CENTER,
+					},
+				},
+			}, func() {
+				hs.claySystem.CreateText("RetroArt", ui.TextConfig{
+					FontSize:  48,
+					TextColor: clay.Color{R: 100, G: 200, B: 255, A: 255}, // Azul moderno vibrante
+				})
 			})
 
 			// Subtítulo
-			hs.claySystem.CreateText("Aplicação Gráfica para Trimui Smart Pro", ui.TextConfig{
-				FontSize:  16,
-				TextColor: clay.Color{R: 180, G: 190, B: 210, A: 255}, // Cinza azulado suave
+			clay.UI()(clay.ElementDeclaration{
+				Id: clay.ID("subtitle-text"),
+				Layout: clay.LayoutConfig{
+					// Sizing: clay.Sizing{
+					// 	Width:  clay.SizingGrow(1),
+					// 	Height: clay.SizingFit(0, 0),
+					// },
+					ChildAlignment: clay.ChildAlignment{
+						X: clay.ALIGN_X_CENTER,
+					},
+				},
+			}, func() {
+				hs.claySystem.CreateText("Aplicação Gráfica para Trimui Smart Pro", ui.TextConfig{
+					FontSize:  16,
+					TextColor: clay.Color{R: 180, G: 190, B: 210, A: 255}, // Cinza azulado suave
+				})
 			})
 
-			// Container para botões
-			hs.claySystem.CreateContainer("buttons", ui.ContainerConfig{
-				Sizing: clay.Sizing{
-					Width:  clay.SizingFixed(320),
-					Height: clay.SizingFit(0, 1000),
+			// Container para botões com layout centralizado
+			clay.UI()(clay.ElementDeclaration{
+				Id: clay.ID("buttons-container"),
+				Layout: clay.LayoutConfig{
+					Sizing: clay.Sizing{
+						Width:  clay.SizingGrow(1),
+						Height: clay.SizingFit(0, 0),
+					},
+					Padding:         clay.PaddingAll(15),
+					ChildGap:        15,
+					LayoutDirection: clay.TOP_TO_BOTTOM,
+					ChildAlignment: clay.ChildAlignment{
+						X: clay.ALIGN_X_CENTER, // Centralizar botões
+					},
 				},
-				Padding:         clay.PaddingAll(15),
-				ChildGap:        15,
-				LayoutDirection: clay.TOP_TO_BOTTOM,
-				BackgroundColor: clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
 			}, func() {
+
 				// Botão próxima tela - Estilo moderno azul
 				nextButtonConfig := ui.DefaultButtonConfig()
 				if hs.selectedIndex == 0 && hs.focusMode == FocusButtons {
@@ -131,7 +184,6 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 					nextButtonConfig.BackgroundColor = clay.Color{R: 50, G: 120, B: 200, A: 200} // Azul suave normal
 					nextButtonConfig.TextColor = clay.Color{R: 220, G: 230, B: 255, A: 255}      // Texto azul claro
 				}
-
 				hs.claySystem.CreateButton("next-button", "Próxima Tela", nextButtonConfig, func() {
 					hs.screenMgr.SetCurrentScreen("second")
 				})
@@ -145,9 +197,7 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 					exitButtonConfig.BackgroundColor = clay.Color{R: 200, G: 60, B: 60, A: 180} // Vermelho suave normal
 					exitButtonConfig.TextColor = clay.Color{R: 255, G: 200, B: 200, A: 255}     // Texto vermelho claro
 				}
-
 				hs.claySystem.CreateButton("exit-button", "Sair", exitButtonConfig, func() {
-					// Note: Seria melhor ter uma referência à app ou um callback
 					log.Println("Exit button pressed")
 				})
 
@@ -160,7 +210,6 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 					testButtonConfig.BackgroundColor = clay.Color{R: 120, G: 60, B: 200, A: 180} // Roxo suave normal
 					testButtonConfig.TextColor = clay.Color{R: 220, G: 200, B: 255, A: 255}      // Texto roxo claro
 				}
-
 				hs.claySystem.CreateButton("test-selected-button", "Mostrar Selecionados", testButtonConfig, func() {
 					selected := hs.checkboxList.GetSelectedItems()
 					log.Printf("=== ELEMENTOS SELECIONADOS ===")

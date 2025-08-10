@@ -56,7 +56,7 @@ func (app *App) Init() error {
 	app.renderer = renderer
 
 	// Carregar fonte
-	font, err := ttf.OpenFont("assets/Roboto-Condensed.ttf", 16)
+	font, err := ttf.OpenFont("assets/DejaVuSansCondensed.ttf", 16)
 	if err != nil {
 		// Se não conseguir carregar a fonte personalizada, usar uma fonte padrão do sistema
 		fmt.Printf("Aviso: Não foi possível carregar fonte personalizada: %v\n", err)
