@@ -281,7 +281,7 @@ func (cl *CheckboxList[T]) getLabelColor(index int) clay.Color {
 }
 
 // renderCheckbox renderiza o checkbox de um item
-func (cl *CheckboxList[T]) renderCheckbox(claySystem *ClayLayoutSystem, itemIndex int) {
+func (cl *CheckboxList[T]) renderCheckbox(itemIndex int) {
 	item := cl.Items[itemIndex]
 	checkboxID := fmt.Sprintf("%s-checkbox-%d", cl.ID, itemIndex)
 
@@ -306,8 +306,8 @@ func (cl *CheckboxList[T]) renderCheckbox(claySystem *ClayLayoutSystem, itemInde
 		BackgroundColor: checkboxColor,
 	}, func() {
 		if item.Selected {
-			claySystem.CreateText("◾", TextConfig{
-				FontSize:  25,
+			clay.Text("◼", &clay.TextElementConfig{
+				FontSize:  24,
 				TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
 			})
 		}
@@ -315,7 +315,7 @@ func (cl *CheckboxList[T]) renderCheckbox(claySystem *ClayLayoutSystem, itemInde
 }
 
 // renderLabel renderiza o label de um item
-func (cl *CheckboxList[T]) renderLabel(claySystem *ClayLayoutSystem, itemIndex int) {
+func (cl *CheckboxList[T]) renderLabel(itemIndex int) {
 	item := cl.Items[itemIndex]
 	labelColor := cl.getLabelColor(itemIndex)
 	labelContainerID := fmt.Sprintf("%s-label-%d", cl.ID, itemIndex)
@@ -333,15 +333,15 @@ func (cl *CheckboxList[T]) renderLabel(claySystem *ClayLayoutSystem, itemIndex i
 			},
 		},
 	}, func() {
-		claySystem.CreateText(item.Label, TextConfig{
-			FontSize:  15,
+		clay.Text(item.Label, &clay.TextElementConfig{
+			FontSize:  14,
 			TextColor: labelColor,
 		})
 	})
 }
 
 // renderItem renderiza um único item da lista
-func (cl *CheckboxList[T]) renderItem(claySystem *ClayLayoutSystem, itemIndex int) {
+func (cl *CheckboxList[T]) renderItem(itemIndex int) {
 	itemID := fmt.Sprintf("%s-item-%d", cl.ID, itemIndex)
 	itemBgColor := cl.getItemBackgroundColor(itemIndex)
 
@@ -359,8 +359,8 @@ func (cl *CheckboxList[T]) renderItem(claySystem *ClayLayoutSystem, itemIndex in
 		CornerRadius:    clay.CornerRadiusAll(10), // Bordas arredondadas nos itens
 		BackgroundColor: itemBgColor,
 	}, func() {
-		cl.renderCheckbox(claySystem, itemIndex)
-		cl.renderLabel(claySystem, itemIndex)
+		cl.renderCheckbox(itemIndex)
+		cl.renderLabel(itemIndex)
 	})
 }
 
@@ -372,15 +372,15 @@ func (cl *CheckboxList[T]) updateVisiblePositions() {
 }
 
 // RenderCheckboxList renderiza uma lista com viewport dinâmico baseado na altura do container pai
-func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, parentHeight float32) {
-	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(parentHeight)
+func (cl *CheckboxList[T]) RenderCheckboxList(height float32) {
+	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(height)
 
 	// Container principal da lista usando toda altura disponível do pai (viewport)
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(cl.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
-				Width: cl.Config.Sizing.Width,
+				Width: clay.SizingPercent(1.0),
 				// Height: clay.SizingPercent(1.0),
 			},
 			Padding:         cl.Config.Padding,
@@ -391,7 +391,7 @@ func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, pare
 		BackgroundColor: cl.Config.BackgroundColor,
 	}, func() {
 		for i := actualVisibleStart; i < actualVisibleEnd; i++ {
-			cl.renderItem(claySystem, i)
+			cl.renderItem(i)
 		}
 	})
 

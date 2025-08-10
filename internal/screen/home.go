@@ -158,14 +158,14 @@ func (h *Home) RenderWithClay() {
 					},
 				},
 			}, func() {
-				h.claySystem.CreateText("Lista de Jogos", ui.TextConfig{
+				clay.Text("Lista de Jogos", &clay.TextElementConfig{
 					FontSize:  20,
 					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 				})
 			})
 
 			// Renderizar checkbox list focável
-			h.checkboxList.Render(h.claySystem, core.WINDOW_HEIGHT-170)
+			h.checkboxList.Render(core.WINDOW_HEIGHT - 170)
 		})
 
 		// Container para botões (lado direito)
@@ -195,8 +195,8 @@ func (h *Home) RenderWithClay() {
 					},
 				},
 			}, func() {
-				h.claySystem.CreateText("Controls", ui.TextConfig{
-					FontSize:  18,
+				clay.Text("Controls", &clay.TextElementConfig{
+					FontSize:  24,
 					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 				})
 			})
@@ -237,7 +237,7 @@ func (h *Home) RenderWithClay() {
 						focusInfo += " | Widget: " + currentFocusable.GetID()
 					}
 
-					h.claySystem.CreateText(focusInfo, ui.TextConfig{
+					clay.Text(focusInfo, &clay.TextElementConfig{
 						FontSize:  12,
 						TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 					})

@@ -73,16 +73,18 @@ func (app *App) Init() error {
 		return fmt.Errorf("erro ao inicializar Clay: %v", err)
 	}
 
-	// Configurar fonte global para medição de texto
-	ui.SetGlobalFont(font)
+	// Configurar sistema de fontes para o Clay
+	if err := ui.InitializeFontSystem(); err != nil {
+		return fmt.Errorf("erro ao inicializar sistema de fontes: %v", err)
+	}
 
 	// Inicializar gerenciador de telas
-	app.screenMgr = screen.NewManager(app.renderer, app.font)
+	app.screenMgr = screen.NewManager(app.renderer, nil) // Usar sistema de cache de fontes
 
 	// Adicionar telas
 	// app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
-	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
-	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer, app.font))
+	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, nil))     // Usar sistema de cache
+	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer, nil)) // Usar sistema de cache
 
 	// Definir tela inicial
 	app.screenMgr.SetCurrentScreen("home")

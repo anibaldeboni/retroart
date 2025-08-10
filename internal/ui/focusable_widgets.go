@@ -107,6 +107,6 @@ func (fcl *FocusableCheckboxList[T]) HandleInput(direction InputDirection) bool 
 }
 
 // Render renderiza a checkbox list
-func (fcl *FocusableCheckboxList[T]) Render(claySystem *ClayLayoutSystem, parentHeight float32) {
-	fcl.RenderCheckboxList(claySystem, parentHeight)
+func (fcl *FocusableCheckboxList[T]) Render(parentHeight float32) {
+	fcl.RenderCheckboxList(parentHeight)
 }

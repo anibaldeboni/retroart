@@ -120,7 +120,7 @@ func (ss *Second) RenderWithClay() {
 					},
 				},
 			}, func() {
-				ss.claySystem.CreateText("Segunda Tela", ui.TextConfig{
+				clay.Text("Segunda Tela", &clay.TextElementConfig{
 					FontSize:  28,
 					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 				})
@@ -137,22 +137,22 @@ func (ss *Second) RenderWithClay() {
 					},
 				},
 			}, func() {
-				ss.claySystem.CreateText("Esta é a segunda tela da aplicação.", ui.TextConfig{
+				clay.Text("Esta é a segunda tela da aplicação.", &clay.TextElementConfig{
 					FontSize:  18,
 					TextColor: clay.Color{R: 230, G: 230, B: 230, A: 255},
 				})
 
-				ss.claySystem.CreateText("Aqui você pode adicionar qualquer conteúdo desejado.", ui.TextConfig{
+				clay.Text("Aqui você pode adicionar qualquer conteúdo desejado.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
 
-				ss.claySystem.CreateText("Esta estrutura permite fácil expansão.", ui.TextConfig{
+				clay.Text("Esta estrutura permite fácil expansão.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
 
-				ss.claySystem.CreateText("O Clay permite layouts flexíveis e responsivos.", ui.TextConfig{
+				clay.Text("O Clay permite layouts flexíveis e responsivos.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
@@ -194,7 +194,7 @@ func (ss *Second) RenderWithClay() {
 						focusInfo += " | Widget: " + currentFocusable.GetID()
 					}
 
-					ss.claySystem.CreateText(focusInfo, ui.TextConfig{
+					clay.Text(focusInfo, &clay.TextElementConfig{
 						FontSize:  12,
 						TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 					})

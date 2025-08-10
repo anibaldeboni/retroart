@@ -8,14 +8,6 @@ import (
 
 // Estruturas de configuração simplificadas
 
-type ContainerConfig struct {
-	Sizing          clay.Sizing
-	Padding         clay.Padding
-	ChildGap        uint16
-	LayoutDirection clay.LayoutDirection
-	BackgroundColor clay.Color
-}
-
 type TextConfig struct {
 	FontSize  uint16
 	TextColor clay.Color
@@ -36,22 +28,6 @@ type ButtonConfig struct {
 type ButtonState struct {
 	BackgroundColor clay.Color
 	TextColor       clay.Color
-}
-
-// Funções helper para criar configurações comuns
-
-// DefaultContainerConfig retorna uma configuração padrão para containers
-func DefaultContainerConfig() ContainerConfig {
-	return ContainerConfig{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingPercent(1.0), // Cresce para ocupar espaço disponível no pai
-			Height: clay.SizingPercent(1.0), // Ajusta altura baseado no conteúdo
-		},
-		Padding:         clay.PaddingAll(10),
-		ChildGap:        8,
-		LayoutDirection: clay.TOP_TO_BOTTOM,
-		BackgroundColor: clay.Color{R: 40, G: 42, B: 54, A: 255}, // Cor de fundo padrão
-	}
 }
 
 // DefaultButtonConfig retorna uma configuração padrão para botões com estado
@@ -120,48 +96,6 @@ func DefaultTextConfig() TextConfig {
 	}
 }
 
-// CreateContainer cria um container básico
-func (cls *ClayLayoutSystem) CreateContainer(id string, config ContainerConfig, children func()) {
-	if !cls.enabled || !cls.isActive {
-		log.Printf("Clay not enabled or not active, skipping CreateContainer: %s", id)
-		return
-	}
-
-	log.Printf("Creating container: %s", id)
-	clay.UI()(clay.ElementDeclaration{
-		Id: clay.ID(id),
-		Layout: clay.LayoutConfig{
-			Sizing: clay.Sizing{
-				Width:  config.Sizing.Width,
-				Height: config.Sizing.Height,
-			},
-			Padding:         config.Padding,
-			ChildGap:        config.ChildGap,
-			LayoutDirection: config.LayoutDirection,
-		},
-		BackgroundColor: config.BackgroundColor,
-	}, children)
-	log.Printf("Container created successfully: %s", id)
-}
-
-// CreateText cria um elemento de texto
-func (cls *ClayLayoutSystem) CreateText(text string, config TextConfig) {
-	if !cls.enabled || !cls.isActive {
-		log.Println("Clay not enabled or not active, skipping CreateText")
-		return
-	}
-
-	// Usar configuração simplificada de texto
-	textConfig := clay.TextElementConfig{
-		FontSize:  config.FontSize,
-		TextColor: config.TextColor,
-	}
-
-	log.Printf("Creating text: %s", text)
-	clay.Text(text, &textConfig)
-	log.Println("Text created successfully")
-}
-
 // CreateButton cria um botão que gerencia seus próprios estados
 func (cls *ClayLayoutSystem) CreateButton(id string, text string, config ButtonConfig, isFocused bool, onClick func()) {
 	if !cls.enabled || !cls.isActive {
@@ -195,7 +129,7 @@ func (cls *ClayLayoutSystem) CreateButton(id string, text string, config ButtonC
 		BackgroundColor: currentState.BackgroundColor,
 	}, func() {
 		// Texto do botão centralizado com cor do estado atual
-		cls.CreateText(text, TextConfig{
+		clay.Text(text, &clay.TextElementConfig{
 			FontSize:  config.TextSize,
 			TextColor: currentState.TextColor,
 		})

@@ -18,6 +18,14 @@ type ClayLayoutSystem struct {
 
 // NewClayLayoutSystem cria um novo sistema de layout Clay
 func NewClayLayoutSystem(renderer *sdl.Renderer, font *ttf.Font) *ClayLayoutSystem {
+	// Se não foi fornecida uma fonte, usar uma fonte padrão do cache
+	if font == nil {
+		font = GetFontForSize(16) // Fonte padrão de 16 pixels
+		if font == nil {
+			log.Println("Warning: Could not get default font from cache")
+		}
+	}
+
 	cls := &ClayLayoutSystem{
 		font:     font,
 		renderer: renderer,

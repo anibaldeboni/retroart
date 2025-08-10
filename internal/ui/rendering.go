@@ -149,13 +149,14 @@ func (cls *ClayLayoutSystem) calculatePixelCoverage(x, y, radius float32) float3
 
 // renderText renderiza texto
 func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.RenderCommand) error {
+	config := &command.RenderData.Text
+	boundingBox := command.BoundingBox
+
+	// Usar a fonte do ClayLayoutSystem
 	if cls.font == nil {
 		log.Println("Warning: No font available for text rendering")
 		return nil
 	}
-
-	config := &command.RenderData.Text
-	boundingBox := command.BoundingBox
 
 	// Log debugging information
 	log.Printf("renderText: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f",

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"unsafe"
@@ -16,63 +17,89 @@ import (
 var globalClayContext *clay.Context
 var globalClayArena clay.Arena
 var arenaResetOffset uint64
-var globalFont *ttf.Font // Adicionar referência global da fonte
 
-// measureTextWithFont é uma função de medição de texto que usa a fonte TTF real quando disponível
+// Sistema de fontes
+var fontCache map[uint16]*ttf.Font // Cache de fontes por tamanho
+
+// measureTextWithFont retorna as dimensões do texto renderizado com uma fonte específica
 func measureTextWithFont(text clay.StringSlice, config *clay.TextElementConfig, userData unsafe.Pointer) clay.Dimensions {
-	if text.Length == 0 {
-		return clay.Dimensions{
-			Width:  1.0,  // Evitar zero width
-			Height: 16.0, // Altura padrão
-		}
-	}
-
+	// Converter clay.StringSlice para string
 	textString := text.String()
+
+	// Se string vazia, retornar dimensões zero
 	if textString == "" {
-		return clay.Dimensions{
-			Width:  1.0,
-			Height: 16.0,
+		return clay.Dimensions{Width: 0, Height: 0}
+	}
+
+	// Obter fonte do tamanho especificado
+	font := GetFontForSize(config.FontSize)
+	if font == nil {
+		// Fallback para tamanhos padrão
+		log.Printf("No font found for size %d, using fallback", config.FontSize)
+		return clay.Dimensions{Width: float32(len(textString) * 8), Height: 16}
+	}
+
+	// Tentar medir o texto completo primeiro
+	w, h, err := font.SizeUTF8(textString)
+	if err != nil {
+		log.Printf("Error measuring text '%s': %v", textString, err)
+		return calculateFallbackDimensions(textString, config.FontSize)
+	}
+
+	// Se retornou largura zero, pode ser problema de caracteres Unicode não suportados
+	if w == 0 && len(textString) > 0 {
+		log.Printf("TTF_SizeUTF8 returned zero width for text '%s', trying character-by-character", textString)
+		return measureTextCharByChar(textString, font, config.FontSize)
+	}
+
+	return clay.Dimensions{Width: float32(w), Height: float32(h)}
+}
+
+// measureTextCharByChar mede texto caractere por caractere para contornar problemas Unicode
+func measureTextCharByChar(text string, font *ttf.Font, fontSize uint16) clay.Dimensions {
+	totalWidth := 0
+	maxHeight := 0
+
+	// Percorre diretamente a string para lidar corretamente com UTF-8
+	for _, r := range text {
+		charStr := string(r)
+
+		// Tentar medir o caractere individual
+		w, h, err := font.SizeUTF8(charStr)
+		if err != nil {
+			// Se falhar, usar fallback baseado no tamanho da fonte
+			w = int(fontSize) / 2 // Aproximação baseada no tamanho da fonte
+			h = int(fontSize)
+		}
+
+		// Se ainda retornar largura zero, usar fallback
+		if w == 0 {
+			w = int(fontSize) / 2
+		}
+		if h == 0 {
+			h = int(fontSize)
+		}
+
+		totalWidth += w
+		if h > maxHeight {
+			maxHeight = h
 		}
 	}
 
-	// Tentar usar a fonte TTF global se disponível
-	if globalFont != nil {
-		// Usar TTF.SizeUTF8 para medição real do texto
-		w, h, err := globalFont.SizeUTF8(textString)
-		if err == nil && w > 0 && h > 0 {
-			return clay.Dimensions{
-				Width:  float32(w),
-				Height: float32(h),
-			}
-		}
-	}
+	return clay.Dimensions{Width: float32(totalWidth), Height: float32(maxHeight)}
+}
 
-	// Fallback para estimativa se TTF não disponível
-	fontSize := float32(16) // tamanho padrão
-	if config != nil && config.FontSize > 0 {
-		fontSize = float32(config.FontSize)
-	}
+// calculateFallbackDimensions calcula dimensões de fallback baseadas no tamanho da fonte
+func calculateFallbackDimensions(text string, fontSize uint16) clay.Dimensions {
+	// Aproximação: largura média de caractere é ~60% do tamanho da fonte
+	// Altura é aproximadamente o tamanho da fonte
+	runeCount := len([]rune(text)) // Conta corretamente caracteres UTF-8
+	avgCharWidth := float32(fontSize) * 0.6
+	totalWidth := avgCharWidth * float32(runeCount)
+	height := float32(fontSize)
 
-	// Calculate dimensions based on font size
-	// Use a more realistic estimation for character width
-	charWidth := fontSize * 0.6 // Approximate ratio for monospace fonts
-	textLength := float32(text.Length)
-
-	width := textLength * charWidth
-	height := fontSize * 1.2 // Add space for ascenders/descenders
-
-	// Ensure dimensions are at least 1 pixel
-	if width < 1.0 {
-		width = 1.0
-	}
-	if height < 1.0 {
-		height = 1.0
-	}
-
-	return clay.Dimensions{
-		Width:  width,
-		Height: height,
-	}
+	log.Printf("Using fallback dimensions for text '%s': W=%.2f H=%.2f", text, totalWidth, height)
+	return clay.Dimensions{Width: totalWidth, Height: height}
 }
 
 // InitializeClayGlobally inicializa Clay uma única vez globalmente
@@ -121,8 +148,87 @@ func InitializeClayGlobally() error {
 	return nil
 }
 
-// SetGlobalFont configura a fonte global para medição de texto
+// InitializeFontSystem inicializa o sistema de fontes
+func InitializeFontSystem() error {
+	fontCache = make(map[uint16]*ttf.Font)
+
+	// Carregar fontes com diferentes tamanhos
+	fontSizes := []uint16{10, 12, 14, 16, 18, 20, 24, 28, 32}
+
+	for _, size := range fontSizes {
+		font, err := loadFontWithSize(size)
+		if err != nil {
+			log.Printf("Warning: Could not load font size %d: %v", size, err)
+			continue
+		}
+		fontCache[size] = font
+		log.Printf("Loaded font size: %d", size)
+	}
+
+	if len(fontCache) == 0 {
+		return errors.New("failed to load any fonts")
+	}
+
+	log.Printf("Font system initialized with %d font sizes", len(fontCache))
+	return nil
+}
+
+// loadFontWithSize carrega uma fonte com tamanho específico
+func loadFontWithSize(size uint16) (*ttf.Font, error) {
+	// Lista de possíveis caminhos de fontes no sistema
+	fontPaths := []string{
+		"assets/DejaVuSansCondensed.ttf",
+		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+		"/usr/share/fonts/TTF/DejaVuSans.ttf",
+		"/System/Library/Fonts/Helvetica.ttc",
+		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+	}
+
+	for _, fontPath := range fontPaths {
+		font, err := ttf.OpenFont(fontPath, int(size))
+		if err == nil {
+			log.Printf("Successfully loaded font from: %s (size %d)", fontPath, size)
+			return font, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not load any font for size %d", size)
+}
+
+// GetFontForSize retorna a fonte para um tamanho específico
+func GetFontForSize(size uint16) *ttf.Font {
+	if fontCache == nil {
+		return nil
+	}
+
+	// Primeiro, tentar o tamanho exato
+	if font, exists := fontCache[size]; exists {
+		return font
+	}
+
+	// Se não existe, procurar o tamanho mais próximo
+	var closestSize uint16
+	var minDiff uint16 = 1000
+
+	for cachedSize := range fontCache {
+		var diff uint16
+		if cachedSize > size {
+			diff = cachedSize - size
+		} else {
+			diff = size - cachedSize
+		}
+
+		if diff < minDiff {
+			minDiff = diff
+			closestSize = cachedSize
+		}
+	}
+
+	return fontCache[closestSize]
+}
+
+// SetGlobalFont configura a fonte global para medição de texto (deprecated)
 func SetGlobalFont(font *ttf.Font) {
-	globalFont = font
-	log.Println("Global font set for text measurement")
+	// Esta função agora é deprecated, mas mantida para compatibilidade
+	log.Println("SetGlobalFont is deprecated - using font system instead")
 }
