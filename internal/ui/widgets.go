@@ -147,9 +147,9 @@ func (cl *CheckboxList[T]) SetFocused(focused bool) {
 }
 
 // MoveFocusUp move o foco para o item anterior
-func (cl *CheckboxList[T]) MoveFocusUp() {
+func (cl *CheckboxList[T]) MoveFocusUp() bool {
 	if !cl.HasFocus || len(cl.Items) == 0 {
-		return
+		return false
 	}
 
 	if cl.FocusedIndex > 0 {
@@ -158,13 +158,15 @@ func (cl *CheckboxList[T]) MoveFocusUp() {
 		if cl.FocusedIndex < cl.ScrollOffset {
 			cl.ScrollOffset = cl.FocusedIndex
 		}
+		return true
 	}
+	return false
 }
 
 // MoveFocusDown move o foco para o próximo item
-func (cl *CheckboxList[T]) MoveFocusDown() {
+func (cl *CheckboxList[T]) MoveFocusDown() bool {
 	if !cl.HasFocus || len(cl.Items) == 0 {
-		return
+		return false
 	}
 
 	if cl.FocusedIndex < len(cl.Items)-1 {
@@ -179,7 +181,9 @@ func (cl *CheckboxList[T]) MoveFocusDown() {
 		if cl.FocusedIndex >= cl.ScrollOffset+maxVisibleItems {
 			cl.ScrollOffset = cl.FocusedIndex - maxVisibleItems + 1
 		}
+		return true
 	}
+	return false
 }
 
 // ToggleFocusedItem alterna a seleção do item em foco
@@ -369,7 +373,6 @@ func (cl *CheckboxList[T]) updateVisiblePositions() {
 
 // RenderCheckboxList renderiza uma lista com viewport dinâmico baseado na altura do container pai
 func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, parentHeight float32) {
-	// Calcular métricas do viewport e scroll virtual
 	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(parentHeight)
 
 	// Container principal da lista usando toda altura disponível do pai (viewport)
@@ -377,8 +380,8 @@ func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, pare
 		Id: clay.ID(cl.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
-				Width:  cl.Config.Sizing.Width,
-				Height: clay.SizingPercent(1.0),
+				Width: cl.Config.Sizing.Width,
+				// Height: clay.SizingPercent(1.0),
 			},
 			Padding:         cl.Config.Padding,
 			ChildGap:        cl.Config.ChildGap,
@@ -387,13 +390,11 @@ func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, pare
 		CornerRadius:    clay.CornerRadiusAll(12),
 		BackgroundColor: cl.Config.BackgroundColor,
 	}, func() {
-		// Renderizar apenas os itens visíveis
 		for i := actualVisibleStart; i < actualVisibleEnd; i++ {
 			cl.renderItem(claySystem, i)
 		}
 	})
 
-	// Atualizar posições visíveis usando o método correto
 	cl.updateVisiblePositions()
 
 	log.Printf("Checkbox list created successfully: %s", cl.ID)
@@ -403,8 +404,7 @@ func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, pare
 func DefaultCheckboxListConfig() CheckboxListConfig {
 	return CheckboxListConfig{
 		Sizing: clay.Sizing{
-			Width: clay.SizingPercent(1.0), // Largura flexível
-			// Height é controlada dinamicamente pelo viewport do container pai
+			Width: clay.SizingPercent(1.0),
 		},
 		Padding:         clay.PaddingAll(10),
 		ChildGap:        5,

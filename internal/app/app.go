@@ -80,6 +80,7 @@ func (app *App) Init() error {
 	app.screenMgr = screen.NewManager(app.renderer, app.font)
 
 	// Adicionar telas
+	// app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
 	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
 	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer, app.font))
 

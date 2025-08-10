@@ -12,8 +12,8 @@ import (
 	"retroart-sdl2/internal/ui"
 )
 
-// Home é a versão refatorada da Home que usa o sistema de foco unificado
-type Home struct {
+// HomeV2 é a versão refatorada da Home que usa o sistema de foco unificado
+type HomeV2 struct {
 	*BaseScreen
 	screenMgr  *Manager
 	claySystem *ui.ClayLayoutSystem
@@ -27,7 +27,7 @@ type Home struct {
 	checkboxList *ui.FocusableCheckboxList[string]
 }
 
-func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
+func NewHomeV2(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 	home := &Home{
 		BaseScreen: NewBaseScreen("home"),
 		screenMgr:  screenMgr,
@@ -139,7 +139,7 @@ func (h *Home) RenderWithClay() {
 			Id: clay.ID("left-container"),
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
-					Width:  clay.SizingPercent(0.35),
+					Width:  clay.SizingPercent(0.7),
 					Height: clay.SizingPercent(1.0),
 				},
 				Padding:         clay.PaddingAll(15),
@@ -165,7 +165,7 @@ func (h *Home) RenderWithClay() {
 			})
 
 			// Renderizar checkbox list focável
-			h.checkboxList.Render(h.claySystem, core.WINDOW_HEIGHT-170)
+			h.checkboxList.Render(h.claySystem, core.WINDOW_HEIGHT-200)
 		})
 
 		// Container para botões (lado direito)
@@ -173,7 +173,7 @@ func (h *Home) RenderWithClay() {
 			Id: clay.ID("right-container"),
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
-					Width:  clay.SizingPercent(0.65),
+					Width:  clay.SizingPercent(0.3),
 					Height: clay.SizingPercent(1.0),
 				},
 				Padding:         clay.PaddingAll(15),
