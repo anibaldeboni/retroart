@@ -93,6 +93,7 @@ func (cls *ClayLayoutSystem) Render() {
 	commands := cls.EndLayout()
 
 	// Renderizar comandos
+
 	err := cls.RenderClayCommands(cls.renderer, commands)
 	if err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)

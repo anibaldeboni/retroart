@@ -36,7 +36,7 @@ func (app *App) Init() error {
 
 	// Criar janela
 	window, err := sdl.CreateWindow(
-		"[CLAY + SDL2] RetroArt - Renderização Ativa!",
+		"RetroArt",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
 		core.WINDOW_WIDTH,

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
 	"github.com/TotallyGamerJet/clay"
@@ -61,10 +61,7 @@ func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boun
 	}
 
 	// Limitar o raio ao tamanho do retângulo
-	maxRadius := w / 2
-	if h/2 < maxRadius {
-		maxRadius = h / 2
-	}
+	maxRadius := min(h/2, w/2)
 	if radius > maxRadius {
 		radius = maxRadius
 	}
@@ -176,7 +173,7 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 	if boundingBox.Width <= 0 || boundingBox.Height <= 0 {
 		log.Printf("Error: Text has zero or negative dimensions: W=%.2f H=%.2f",
 			boundingBox.Width, boundingBox.Height)
-		return fmt.Errorf("Text has zero width")
+		return errors.New("Text has zero width")
 	}
 
 	color := sdl.Color{

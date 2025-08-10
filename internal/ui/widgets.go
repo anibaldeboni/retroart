@@ -36,6 +36,8 @@ type CheckboxList[T any] struct {
 	// Campos para navegação e foco
 	FocusedIndex int  // Índice do item em foco (-1 se nenhum)
 	HasFocus     bool // Se o checkbox list tem foco global
+	// Campo para viewport dinâmico
+	CurrentViewportHeight float32 // Altura atual do viewport para cálculo de scroll
 }
 
 // NewCheckboxList cria uma nova lista com checkboxes
@@ -90,9 +92,49 @@ func (cl *CheckboxList[T]) ScrollUp() {
 
 // ScrollDown rola a lista para baixo
 func (cl *CheckboxList[T]) ScrollDown() {
-	maxItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
-	if cl.ScrollOffset+maxItems < len(cl.Items) {
+	maxVisibleItems := cl.GetMaxVisibleItems()
+	if cl.ScrollOffset+maxVisibleItems < len(cl.Items) {
 		cl.ScrollOffset++
+	}
+}
+
+// GetMaxVisibleItems calcula itens visíveis dinamicamente baseado no viewport atual
+func (cl *CheckboxList[T]) GetMaxVisibleItems() int {
+	if cl.CurrentViewportHeight > 0 && cl.Config.ItemHeight > 0 {
+		totalPadding := float32(cl.Config.Padding.Top + cl.Config.Padding.Bottom)
+		availableHeight := cl.CurrentViewportHeight - totalPadding
+		return int(availableHeight / cl.Config.ItemHeight)
+	}
+	return 10 // Fallback padrão quando viewport não está definido
+}
+
+// SetVisibleItemsCount define número de itens visíveis sem usar altura fixa
+func (cl *CheckboxList[T]) SetVisibleItemsCount(count int) {
+	// Recalcula MaxHeight baseado no número de itens desejados
+	cl.Config.MaxHeight = float32(count) * cl.Config.ItemHeight
+}
+
+// GetVisibleRange retorna o range atual de itens visíveis
+func (cl *CheckboxList[T]) GetVisibleRange() (start, end int) {
+	maxVisible := cl.GetMaxVisibleItems()
+	start = cl.ScrollOffset
+	end = min(start+maxVisible, len(cl.Items))
+	return start, end
+}
+
+// EnsureItemVisible garante que um item específico esteja visível
+func (cl *CheckboxList[T]) EnsureItemVisible(itemIndex int) {
+	if itemIndex < 0 || itemIndex >= len(cl.Items) {
+		return
+	}
+
+	maxVisible := cl.GetMaxVisibleItems()
+	start, end := cl.GetVisibleRange()
+
+	if itemIndex < start {
+		cl.ScrollOffset = itemIndex
+	} else if itemIndex >= end {
+		cl.ScrollOffset = max(0, itemIndex-maxVisible+1)
 	}
 }
 
@@ -100,7 +142,6 @@ func (cl *CheckboxList[T]) ScrollDown() {
 func (cl *CheckboxList[T]) SetFocused(focused bool) {
 	cl.HasFocus = focused
 	if focused && cl.FocusedIndex == -1 && len(cl.Items) > 0 {
-		// Se ganhou foco e nenhum item estava focado, focar no primeiro visível
 		cl.FocusedIndex = cl.ScrollOffset
 	}
 }
@@ -113,7 +154,7 @@ func (cl *CheckboxList[T]) MoveFocusUp() {
 
 	if cl.FocusedIndex > 0 {
 		cl.FocusedIndex--
-		// Se o item focado saiu da área visível, fazer scroll
+		// Ajustar scroll se item focado saiu da área visível (acima)
 		if cl.FocusedIndex < cl.ScrollOffset {
 			cl.ScrollOffset = cl.FocusedIndex
 		}
@@ -128,10 +169,15 @@ func (cl *CheckboxList[T]) MoveFocusDown() {
 
 	if cl.FocusedIndex < len(cl.Items)-1 {
 		cl.FocusedIndex++
-		// Se o item focado saiu da área visível, fazer scroll
-		maxItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
-		if cl.FocusedIndex >= cl.ScrollOffset+maxItems {
-			cl.ScrollOffset = cl.FocusedIndex - maxItems + 1
+		// Calcular itens máximos usando método dinâmico
+		maxVisibleItems := cl.GetMaxVisibleItems()
+		if maxVisibleItems == 0 {
+			maxVisibleItems = 10 // Fallback para evitar divisão por zero
+		}
+
+		// Se o item focado saiu da área visível (abaixo), fazer scroll
+		if cl.FocusedIndex >= cl.ScrollOffset+maxVisibleItems {
+			cl.ScrollOffset = cl.FocusedIndex - maxVisibleItems + 1
 		}
 	}
 }
@@ -144,156 +190,236 @@ func (cl *CheckboxList[T]) ToggleFocusedItem() {
 	cl.ToggleItem(cl.FocusedIndex)
 }
 
-// RenderCheckboxList renderiza uma lista com checkboxes e retorna se foi criada com sucesso
-func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem) {
-	log.Printf("Creating checkbox list: %s", cl.ID)
+// calculateViewportMetrics calcula as métricas do viewport para scroll virtual
+func (cl *CheckboxList[T]) calculateViewportMetrics(parentHeight float32) (maxVisibleItems int, actualVisibleStart int, actualVisibleEnd int) {
+	// Armazenar altura do viewport para uso em navegação
+	cl.CurrentViewportHeight = parentHeight
 
-	// Atualizar posições visíveis baseado no scroll
-	maxVisibleItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
-	actualVisibleStart := 0
-	actualVisibleEnd := len(cl.Items)
+	// Calcular altura disponível para itens (descontando padding do CheckboxList)
+	totalPadding := float32(cl.Config.Padding.Top + cl.Config.Padding.Bottom)
+	availableHeight := parentHeight - totalPadding
 
-	if len(cl.Items) > maxVisibleItems {
-		actualVisibleStart = cl.VisibleStart
-		actualVisibleEnd = min(cl.VisibleStart+maxVisibleItems, len(cl.Items))
+	// Calcular quantos itens cabem no viewport disponível
+	maxVisibleItems = max(int(availableHeight/cl.Config.ItemHeight), 1)
+
+	if len(cl.Items) <= maxVisibleItems {
+		// Todos os itens cabem no viewport - mostrar todos
+		actualVisibleStart = 0
+		actualVisibleEnd = len(cl.Items)
+		cl.ScrollOffset = 0 // Reset scroll quando todos cabem
+	} else {
+		// Scroll virtual necessário - viewport menor que total de itens
+		actualVisibleStart = cl.ScrollOffset
+		actualVisibleEnd = min(cl.ScrollOffset+maxVisibleItems, len(cl.Items))
+
+		// Log quando scroll está ativo
+		if cl.ScrollOffset > 0 || actualVisibleEnd < len(cl.Items) {
+			log.Printf("Scroll: showing items %d-%d of %d total",
+				actualVisibleStart, actualVisibleEnd-1, len(cl.Items))
+		}
+
+		// Auto-scroll para manter item focado sempre visível no viewport
+		actualVisibleStart, actualVisibleEnd = cl.adjustScrollForFocus(maxVisibleItems, actualVisibleStart, actualVisibleEnd)
+
+		// Ajustar scroll se necessário para evitar espaço vazio
+		actualVisibleStart, actualVisibleEnd = cl.adjustScrollToAvoidEmptySpace(maxVisibleItems, actualVisibleStart, actualVisibleEnd)
 	}
 
-	// Container principal da lista com dimensões fixas baseadas no container pai
+	return maxVisibleItems, actualVisibleStart, actualVisibleEnd
+}
+
+// adjustScrollForFocus ajusta o scroll para manter o item focado visível
+func (cl *CheckboxList[T]) adjustScrollForFocus(maxVisibleItems, actualVisibleStart, actualVisibleEnd int) (int, int) {
+	if cl.HasFocus && cl.FocusedIndex >= 0 {
+		if cl.FocusedIndex < actualVisibleStart {
+			// Item focado está acima do viewport - scroll para cima
+			cl.ScrollOffset = cl.FocusedIndex
+			actualVisibleStart = cl.ScrollOffset
+			actualVisibleEnd = min(actualVisibleStart+maxVisibleItems, len(cl.Items))
+		} else if cl.FocusedIndex >= actualVisibleEnd {
+			// Item focado está abaixo do viewport - scroll para baixo
+			cl.ScrollOffset = max(cl.FocusedIndex-maxVisibleItems+1, 0)
+			actualVisibleStart = cl.ScrollOffset
+			actualVisibleEnd = min(actualVisibleStart+maxVisibleItems, len(cl.Items))
+		}
+	}
+	return actualVisibleStart, actualVisibleEnd
+}
+
+// adjustScrollToAvoidEmptySpace ajusta o scroll para evitar espaço vazio no final
+func (cl *CheckboxList[T]) adjustScrollToAvoidEmptySpace(maxVisibleItems, actualVisibleStart, actualVisibleEnd int) (int, int) {
+	if actualVisibleEnd < len(cl.Items) && actualVisibleEnd-actualVisibleStart < maxVisibleItems {
+		actualVisibleStart = max(0, len(cl.Items)-maxVisibleItems)
+		actualVisibleEnd = len(cl.Items)
+		cl.ScrollOffset = actualVisibleStart
+	}
+	return actualVisibleStart, actualVisibleEnd
+}
+
+// getItemBackgroundColor determina a cor de fundo de um item baseado no seu estado
+func (cl *CheckboxList[T]) getItemBackgroundColor(index int) clay.Color {
+	if cl.HasFocus && cl.FocusedIndex == index {
+		return clay.Color{R: 60, G: 120, B: 200, A: 255} // Azul para item focado
+	} else if cl.Items[index].Selected {
+		return clay.Color{R: 40, G: 120, B: 80, A: 255} // Verde para item selecionado
+	}
+	return clay.Color{R: 0, G: 0, B: 0, A: 0} // Transparente para item normal
+}
+
+// getLabelColor determina a cor do texto do label baseado no estado do item
+func (cl *CheckboxList[T]) getLabelColor(index int) clay.Color {
+	if cl.HasFocus && cl.FocusedIndex == index {
+		return clay.Color{R: 255, G: 255, B: 255, A: 255} // Branco para item focado
+	} else if cl.Items[index].Selected {
+		return clay.Color{R: 180, G: 255, B: 200, A: 255} // Verde claro para item selecionado
+	}
+	return clay.Color{R: 220, G: 230, B: 245, A: 255} // Cinza claro para item normal
+}
+
+// renderCheckbox renderiza o checkbox de um item
+func (cl *CheckboxList[T]) renderCheckbox(claySystem *ClayLayoutSystem, itemIndex int) {
+	item := cl.Items[itemIndex]
+	checkboxID := fmt.Sprintf("%s-checkbox-%d", cl.ID, itemIndex)
+
+	checkboxColor := clay.Color{R: 60, G: 70, B: 85, A: 255} // Cinza escuro moderno
+	if item.Selected {
+		checkboxColor = clay.Color{R: 30, G: 180, B: 120, A: 255} // Verde moderno vibrante
+	}
+
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID(checkboxID),
+		Layout: clay.LayoutConfig{
+			Sizing: clay.Sizing{
+				Width:  clay.SizingFixed(cl.Config.CheckboxSize),
+				Height: clay.SizingFixed(cl.Config.CheckboxSize),
+			},
+			ChildAlignment: clay.ChildAlignment{
+				X: clay.ALIGN_X_CENTER,
+				Y: clay.ALIGN_Y_CENTER,
+			},
+		},
+		CornerRadius:    clay.CornerRadiusAll(4), // Checkbox ligeiramente arredondado
+		BackgroundColor: checkboxColor,
+	}, func() {
+		if item.Selected {
+			claySystem.CreateText("◾", TextConfig{
+				FontSize:  25,
+				TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
+			})
+		}
+	})
+}
+
+// renderLabel renderiza o label de um item
+func (cl *CheckboxList[T]) renderLabel(claySystem *ClayLayoutSystem, itemIndex int) {
+	item := cl.Items[itemIndex]
+	labelColor := cl.getLabelColor(itemIndex)
+	labelContainerID := fmt.Sprintf("%s-label-%d", cl.ID, itemIndex)
+
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID(labelContainerID),
+		Layout: clay.LayoutConfig{
+			Sizing: clay.Sizing{
+				Width:  clay.SizingPercent(1.0),
+				Height: clay.SizingPercent(1.0),
+			},
+			LayoutDirection: clay.TOP_TO_BOTTOM,
+			ChildAlignment: clay.ChildAlignment{
+				Y: clay.ALIGN_Y_CENTER,
+			},
+		},
+	}, func() {
+		claySystem.CreateText(item.Label, TextConfig{
+			FontSize:  15,
+			TextColor: labelColor,
+		})
+	})
+}
+
+// renderItem renderiza um único item da lista
+func (cl *CheckboxList[T]) renderItem(claySystem *ClayLayoutSystem, itemIndex int) {
+	itemID := fmt.Sprintf("%s-item-%d", cl.ID, itemIndex)
+	itemBgColor := cl.getItemBackgroundColor(itemIndex)
+
+	// Checkbox item container
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID(itemID),
+		Layout: clay.LayoutConfig{
+			Sizing: clay.Sizing{
+				Width: clay.SizingPercent(1.0),
+			},
+			Padding:         clay.PaddingAll(12),
+			ChildGap:        12,
+			LayoutDirection: clay.LEFT_TO_RIGHT,
+		},
+		CornerRadius:    clay.CornerRadiusAll(10), // Bordas arredondadas nos itens
+		BackgroundColor: itemBgColor,
+	}, func() {
+		cl.renderCheckbox(claySystem, itemIndex)
+		cl.renderLabel(claySystem, itemIndex)
+	})
+}
+
+// updateVisiblePositions atualiza as posições visíveis usando o método correto
+func (cl *CheckboxList[T]) updateVisiblePositions() {
+	maxItems := cl.GetMaxVisibleItems()
+	cl.VisibleStart = cl.ScrollOffset
+	cl.VisibleEnd = min(cl.ScrollOffset+maxItems, len(cl.Items))
+}
+
+// RenderCheckboxList renderiza uma lista com viewport dinâmico baseado na altura do container pai
+func (cl *CheckboxList[T]) RenderCheckboxList(claySystem *ClayLayoutSystem, parentHeight float32) {
+	// Calcular métricas do viewport e scroll virtual
+	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(parentHeight)
+
+	// Container principal da lista usando toda altura disponível do pai (viewport)
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(cl.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
 				Width:  cl.Config.Sizing.Width,
-				Height: cl.Config.Sizing.Height,
+				Height: clay.SizingPercent(1.0),
 			},
 			Padding:         cl.Config.Padding,
 			ChildGap:        cl.Config.ChildGap,
 			LayoutDirection: clay.TOP_TO_BOTTOM,
 		},
-		CornerRadius:    clay.CornerRadiusAll(12), // Bordas mais arredondadas
+		CornerRadius:    clay.CornerRadiusAll(12),
 		BackgroundColor: cl.Config.BackgroundColor,
 	}, func() {
 		// Renderizar apenas os itens visíveis
 		for i := actualVisibleStart; i < actualVisibleEnd; i++ {
-			item := cl.Items[i]
-			itemID := fmt.Sprintf("%s-item-%d", cl.ID, i)
-
-			// Determinar cor de fundo do item (destaque se em foco)
-			itemBgColor := clay.Color{R: 0, G: 0, B: 0, A: 0} // Transparente por padrão
-			if cl.HasFocus && cl.FocusedIndex == i {
-				// Item em foco - gradiente azul moderno
-				itemBgColor = clay.Color{R: 60, G: 120, B: 200, A: 255} // Alpha máximo
-				log.Printf("Item %d (focused): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
-			} else if item.Selected {
-				// Item selecionado - fundo verde suave
-				itemBgColor = clay.Color{R: 40, G: 120, B: 80, A: 255} // Alpha máximo
-				log.Printf("Item %d (selected): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
-			} else {
-				log.Printf("Item %d (normal): BgColor R=%.0f G=%.0f B=%.0f A=%.0f", i, itemBgColor.R, itemBgColor.G, itemBgColor.B, itemBgColor.A)
-			}
-
-			// Container do item com dimensões fixas adequadas
-			clay.UI()(clay.ElementDeclaration{
-				Id: clay.ID(itemID),
-				Layout: clay.LayoutConfig{
-					Sizing: clay.Sizing{
-						Width: clay.SizingPercent(1.0),
-					},
-					// Padding:         clay.Padding{Left: 15, Right: 15, Top: 12, Bottom: 12},
-					Padding:         clay.PaddingAll(12),
-					ChildGap:        12,
-					LayoutDirection: clay.LEFT_TO_RIGHT,
-				},
-				CornerRadius:    clay.CornerRadiusAll(10), // Bordas arredondadas nos itens
-				BackgroundColor: itemBgColor,
-			}, func() {
-				// Checkbox
-				checkboxID := fmt.Sprintf("%s-checkbox-%d", cl.ID, i)
-				checkboxColor := clay.Color{R: 60, G: 70, B: 85, A: 255} // Cinza escuro moderno
-				if item.Selected {
-					checkboxColor = clay.Color{R: 30, G: 180, B: 120, A: 255} // Verde moderno vibrante
-				}
-
-				clay.UI()(clay.ElementDeclaration{
-					Id: clay.ID(checkboxID),
-					Layout: clay.LayoutConfig{
-						Sizing: clay.Sizing{
-							Width:  clay.SizingFixed(cl.Config.CheckboxSize),
-							Height: clay.SizingFixed(cl.Config.CheckboxSize),
-						},
-						ChildAlignment: clay.ChildAlignment{
-							X: clay.ALIGN_X_CENTER,
-							Y: clay.ALIGN_Y_CENTER,
-						},
-					},
-					CornerRadius:    clay.CornerRadiusAll(4), // Checkbox ligeiramente arredondado
-					BackgroundColor: checkboxColor,
-				}, func() {
-					// Marca de seleção (checkmark) se selecionado
-					if item.Selected {
-						// Container adicional para melhor controle de posicionamento
-						claySystem.CreateText("◾", TextConfig{
-							FontSize:  25,
-							TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
-						})
-					}
-				})
-
-				// Label do item - container para controlar largura e quebra de texto
-				labelColor := clay.Color{R: 220, G: 230, B: 245, A: 255} // Branco azulado suave por padrão
-				if cl.HasFocus && cl.FocusedIndex == i {
-					// Texto mais brilhante quando em foco
-					labelColor = clay.Color{R: 255, G: 255, B: 255, A: 255} // Branco puro
-				} else if item.Selected {
-					// Texto verde claro para itens selecionados
-					labelColor = clay.Color{R: 180, G: 255, B: 200, A: 255}
-				}
-
-				// Container para o texto com largura fixa no layout horizontal
-				labelContainerID := fmt.Sprintf("%s-label-%d", cl.ID, i)
-				clay.UI()(clay.ElementDeclaration{
-					Id: clay.ID(labelContainerID),
-					Layout: clay.LayoutConfig{
-						Sizing: clay.Sizing{
-							Width:  clay.SizingPercent(1.0),
-							Height: clay.SizingPercent(1.0),
-						},
-						LayoutDirection: clay.TOP_TO_BOTTOM,
-						ChildAlignment: clay.ChildAlignment{
-							Y: clay.ALIGN_Y_CENTER,
-						},
-					},
-				}, func() {
-					claySystem.CreateText(item.Label, TextConfig{
-						FontSize:  15, // Fonte ligeiramente maior
-						TextColor: labelColor,
-					})
-				})
-			})
+			cl.renderItem(claySystem, i)
 		}
 	})
 
-	// Atualizar posições visíveis
-	maxItems := int(cl.Config.MaxHeight / cl.Config.ItemHeight)
-	cl.VisibleStart = cl.ScrollOffset
-	cl.VisibleEnd = min(cl.ScrollOffset+maxItems, len(cl.Items))
+	// Atualizar posições visíveis usando o método correto
+	cl.updateVisiblePositions()
 
 	log.Printf("Checkbox list created successfully: %s", cl.ID)
 }
 
-// DefaultCheckboxListConfig retorna configuração otimizada para layout automático seguindo padrões Clay
+// DefaultCheckboxListConfig retorna configuração para viewport dinâmico
 func DefaultCheckboxListConfig() CheckboxListConfig {
 	return CheckboxListConfig{
 		Sizing: clay.Sizing{
-			Width: clay.SizingPercent(1.0),
-			// Height: clay.SizingPercent(1.0),
+			Width: clay.SizingPercent(1.0), // Largura flexível
+			// Height é controlada dinamicamente pelo viewport do container pai
 		},
 		Padding:         clay.PaddingAll(10),
-		ChildGap:        5, // Espaçamento maior entre itens para acomodar texto multi-linha
+		ChildGap:        5,
 		BackgroundColor: clay.Color{R: 25, G: 30, B: 40, A: 240},
-		MaxHeight:       600, // Altura máxima aumentada
 		ScrollOffset:    0,
 		CheckboxSize:    25,
-		ItemHeight:      45, // Altura maior para acomodar texto longo
+		ItemHeight:      45,
 	}
+}
+
+// ViewportCheckboxListConfig configuração otimizada para viewport dinâmico
+func ViewportCheckboxListConfig() CheckboxListConfig {
+	config := DefaultCheckboxListConfig()
+	config.ItemHeight = 40   // Itens um pouco menores para mais itens visíveis
+	config.CheckboxSize = 22 // Checkbox proporcionalmente menor
+	config.ChildGap = 3      // Gap menor para aproveitar melhor o espaço
+	return config
 }

@@ -53,9 +53,13 @@ func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
 		{Label: "Luta Arcade Clássica", Value: "game10", Selected: true},
 		{Label: "Música e Ritmo", Value: "game11", Selected: false},
 		{Label: "Terror Psicológico", Value: "game12", Selected: false},
+		{Label: "Alex Kidd in the miracle world", Value: "game13", Selected: false},
+		{Label: "Street Fighter", Value: "game14", Selected: true},
+		{Label: "Need for speed", Value: "game15", Selected: false},
+		{Label: "BLACK", Value: "game16", Selected: false},
 	}
 
-	screen.checkboxList = ui.NewCheckboxList("test-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
+	screen.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
 
 	return screen
 }
@@ -82,8 +86,6 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 		},
 		BackgroundColor: clay.Color{R: 32, G: 34, B: 37, A: 255}, // Fundo escuro principal
 	}, func() {
-
-		// Container do checkbox list (proporção 2 de 5 partes = 40%)
 		clay.UI()(clay.ElementDeclaration{
 			Id: clay.ID("checkbox-container"),
 			Layout: clay.LayoutConfig{
@@ -97,11 +99,10 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 			CornerRadius:    clay.CornerRadiusAll(12),
 			BackgroundColor: clay.Color{R: 45, G: 50, B: 65, A: 255},
 		}, func() {
-			// Renderizar checkbox list usando widget
-			hs.checkboxList.RenderCheckboxList(hs.claySystem)
+			containerHeight := float32(600)
+			hs.checkboxList.RenderCheckboxList(hs.claySystem, containerHeight)
 		})
 
-		// Container de conteúdo (proporção 3 de 5 partes = 60%)
 		clay.UI()(clay.ElementDeclaration{
 			Id: clay.ID("content-container"),
 			Layout: clay.LayoutConfig{
@@ -124,12 +125,13 @@ func (hs *Home) Render(renderer *sdl.Renderer) {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("title-text"),
 				Layout: clay.LayoutConfig{
-					// Sizing: clay.Sizing{
-					// 	Width:  clay.SizingGrow(1),
-					// 	Height: clay.SizingFit(0, 0),
-					// },
+					Sizing: clay.Sizing{
+						Width:  clay.SizingPercent(1.0),
+						Height: clay.SizingFit(0, 50),
+					},
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
+						Y: clay.ALIGN_Y_CENTER,
 					},
 				},
 			}, func() {
