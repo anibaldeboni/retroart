@@ -1,0 +1,6 @@
+{
+    "label": "RetroArt",
+    "icon": "icon.png",
+    "launch": "launch.sh",
+    "description": "Game cover scraper"
+}
