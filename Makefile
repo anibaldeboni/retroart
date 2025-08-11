@@ -44,9 +44,6 @@ build: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
 		echo "$(BLUE)📊 File information:$(NC)"; \
 		ls -la $(TRIMUI_BINARY_NAME); \
 		file $(TRIMUI_BINARY_NAME); \
-		echo ""; \
-		echo "$(YELLOW)🎮 To transfer to TrimUI Smart Pro:$(NC)"; \
-		echo "   scp $(TRIMUI_BINARY_NAME) user@trimui:/path/to/destination/"; \
 	else \
 		echo ""; \
 		echo "$(RED)❌ Build failed - binary not found$(NC)"; \
