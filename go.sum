@@ -2,8 +2,6 @@ github.com/TotallyGamerJet/clay v0.0.7 h1:F47GspgD/Z+eYzL3fWXSRtxrWM0TWmKGTXXjYT
 github.com/TotallyGamerJet/clay v0.0.7/go.mod h1:BP0NpT0aPfVjNAdDQIS0VkzUoLpfr5O/lCNxyXHUtWc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/ebitengine/purego v0.9.0-alpha.9 h1:+OPDXjPESTGhQ/2zO0aQeUR8r4o1feLMSDQzkA6z9ug=
-github.com/ebitengine/purego v0.9.0-alpha.9/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/gotranspile/cxgo v0.5.2 h1:wjVTZgzKt9OEwCjfXpjOBy8jwoTSHpBDWZHBIO7D0UE=
 github.com/gotranspile/cxgo v0.5.2/go.mod h1:GeAQpkzbCOjnhEutduK/RPrio2NIuy3jPSj8gqzhhwI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
