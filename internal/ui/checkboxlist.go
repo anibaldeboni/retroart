@@ -37,7 +37,7 @@ type CheckboxList[T any] struct {
 	FocusedIndex int  // Índice do item em foco (-1 se nenhum)
 	HasFocus     bool // Se o checkbox list tem foco global
 	// Campo para viewport dinâmico
-	CurrentViewportHeight float32 // Altura atual do viewport para cálculo de scroll
+	CurrentViewportHeight float32
 }
 
 // NewCheckboxList cria uma nova lista com checkboxes
@@ -135,14 +135,6 @@ func (cl *CheckboxList[T]) EnsureItemVisible(itemIndex int) {
 		cl.ScrollOffset = itemIndex
 	} else if itemIndex >= end {
 		cl.ScrollOffset = max(0, itemIndex-maxVisible+1)
-	}
-}
-
-// SetFocused define se o checkbox list tem foco
-func (cl *CheckboxList[T]) SetFocused(focused bool) {
-	cl.HasFocus = focused
-	if focused && cl.FocusedIndex == -1 && len(cl.Items) > 0 {
-		cl.FocusedIndex = cl.ScrollOffset
 	}
 }
 
@@ -371,8 +363,8 @@ func (cl *CheckboxList[T]) updateVisiblePositions() {
 	cl.VisibleEnd = min(cl.ScrollOffset+maxItems, len(cl.Items))
 }
 
-// RenderCheckboxList renderiza uma lista com viewport dinâmico baseado na altura do container pai
-func (cl *CheckboxList[T]) RenderCheckboxList(height float32) {
+// Render renderiza uma lista com viewport dinâmico baseado na altura do container pai
+func (cl *CheckboxList[T]) Render(height float32) {
 	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(height)
 
 	// Container principal da lista usando toda altura disponível do pai (viewport)
@@ -398,6 +390,44 @@ func (cl *CheckboxList[T]) RenderCheckboxList(height float32) {
 	cl.updateVisiblePositions()
 
 	log.Printf("Checkbox list created successfully: %s", cl.ID)
+}
+
+// Interface Focusable implementation
+func (cl *CheckboxList[T]) GetID() string {
+	return cl.ID
+}
+
+func (cl *CheckboxList[T]) IsFocused() bool {
+	return cl.HasFocus
+}
+
+func (cl *CheckboxList[T]) OnFocusChanged(focused bool) {
+	cl.HasFocus = focused
+	if focused && cl.FocusedIndex == -1 && len(cl.Items) > 0 {
+		cl.FocusedIndex = cl.ScrollOffset
+	}
+}
+
+func (cl *CheckboxList[T]) CanFocus() bool {
+	return len(cl.Items) > 0
+}
+
+func (cl *CheckboxList[T]) HandleInput(direction InputDirection) bool {
+	if !cl.HasFocus {
+		return false
+	}
+
+	switch direction {
+	case DirectionUp:
+		return cl.MoveFocusUp()
+	case DirectionDown:
+		return cl.MoveFocusDown()
+	case DirectionConfirm:
+		cl.ToggleFocusedItem()
+		return true
+	default:
+		return false
+	}
 }
 
 // DefaultCheckboxListConfig retorna configuração para viewport dinâmico

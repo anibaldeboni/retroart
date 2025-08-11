@@ -22,7 +22,7 @@ type Home struct {
 
 	// Widgets focáveis
 	buttons      []*ui.Button
-	checkboxList *ui.FocusableCheckboxList[string]
+	checkboxList *ui.CheckboxList[string]
 }
 
 func NewHome(screenMgr *Manager) *Home {
@@ -77,7 +77,7 @@ func (h *Home) initializeWidgets() {
 		{Label: "BLACK", Value: "game16", Selected: false},
 	}
 
-	h.checkboxList = ui.NewFocusableCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
+	h.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
 }
 
 // InitializeFocus configura os grupos de foco
