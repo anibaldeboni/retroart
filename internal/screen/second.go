@@ -6,29 +6,24 @@ import (
 	"retroart-sdl2/internal/ui"
 
 	"github.com/TotallyGamerJet/clay"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 type Second struct {
 	*BaseScreen
-	screenMgr  *Manager
-	claySystem *ui.ClayLayoutSystem
+	screenMgr *Manager
 
 	// Widgets focáveis
-	buttons []*ui.FocusableButton
+	buttons []*ui.Button
 
 	// Grupos de foco
 	buttonGroup *ui.FocusGroup
 }
 
-func NewSecond(screenMgr *Manager, renderer *sdl.Renderer) *Second {
+func NewSecond(screenMgr *Manager) *Second {
 	screen := &Second{
 		BaseScreen: NewBaseScreen("second-screen"),
 		screenMgr:  screenMgr,
 	}
-
-	// Criar sistema Clay para esta tela
-	screen.claySystem = ui.NewClayLayoutSystem(renderer)
 
 	screen.initializeWidgets()
 	screen.InitializeFocus()
@@ -38,14 +33,14 @@ func NewSecond(screenMgr *Manager, renderer *sdl.Renderer) *Second {
 
 func (ss *Second) initializeWidgets() {
 	// Criar botões focáveis
-	ss.buttons = []*ui.FocusableButton{
-		ui.NewFocusableButton("back-btn", "Voltar", ui.PrimaryButtonConfig(), func() {
+	ss.buttons = []*ui.Button{
+		ui.NewButton("back-btn", "Voltar", ui.PrimaryButtonConfig(), func() {
 			ss.screenMgr.SetCurrentScreen("home")
 		}),
-		ui.NewFocusableButton("options-btn", "Opções", ui.SecondaryButtonConfig(), func() {
+		ui.NewButton("options-btn", "Opções", ui.SecondaryButtonConfig(), func() {
 			// Ação para opções (pode ser implementada futuramente)
 		}),
-		ui.NewFocusableButton("exit-btn", "Sair", ui.DangerButtonConfig(), func() {
+		ui.NewButton("exit-btn", "Sair", ui.DangerButtonConfig(), func() {
 			// Ação para sair
 		}),
 	}
@@ -66,15 +61,7 @@ func (ss *Second) Update() {
 	// Lógica de atualização se necessária
 }
 
-func (ss *Second) Render(renderer *sdl.Renderer) {
-	ss.RenderWithClay()
-}
-
-// RenderWithClay - método específico para renderização Clay
-func (ss *Second) RenderWithClay() {
-	ss.claySystem.BeginLayout()
-
-	// Layout principal centralizado
+func (ss *Second) Render() {
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
 		Layout: clay.LayoutConfig{
@@ -171,7 +158,7 @@ func (ss *Second) RenderWithClay() {
 			}, func() {
 				// Renderizar todos os botões focáveis
 				for _, button := range ss.buttons {
-					button.Render(ss.claySystem)
+					button.Render()
 				}
 			})
 
@@ -201,9 +188,6 @@ func (ss *Second) RenderWithClay() {
 			})
 		})
 	})
-
-	// Finalizar e renderizar
-	ss.claySystem.Render()
 }
 
 func (ss *Second) HandleInput(input InputType) {

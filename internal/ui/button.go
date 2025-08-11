@@ -1,7 +1,12 @@
 package ui
 
-// FocusableButton é um wrapper que torna Button compatível com o sistema de foco
-type FocusableButton struct {
+import (
+	"log"
+
+	"github.com/TotallyGamerJet/clay"
+)
+
+type Button struct {
 	ID      string
 	Label   string
 	Config  ButtonConfig
@@ -10,9 +15,9 @@ type FocusableButton struct {
 	enabled bool
 }
 
-// NewFocusableButton cria um novo botão focável
-func NewFocusableButton(id, label string, config ButtonConfig, onClick func()) *FocusableButton {
-	return &FocusableButton{
+// NewButton cria um novo botão focável
+func NewButton(id, label string, config ButtonConfig, onClick func()) *Button {
+	return &Button{
 		ID:      id,
 		Label:   label,
 		Config:  config,
@@ -22,23 +27,23 @@ func NewFocusableButton(id, label string, config ButtonConfig, onClick func()) *
 }
 
 // Interface Focusable implementation
-func (fb *FocusableButton) GetID() string {
+func (fb *Button) GetID() string {
 	return fb.ID
 }
 
-func (fb *FocusableButton) IsFocused() bool {
+func (fb *Button) IsFocused() bool {
 	return fb.focused
 }
 
-func (fb *FocusableButton) OnFocusChanged(focused bool) {
+func (fb *Button) OnFocusChanged(focused bool) {
 	fb.focused = focused
 }
 
-func (fb *FocusableButton) CanFocus() bool {
+func (fb *Button) CanFocus() bool {
 	return fb.enabled
 }
 
-func (fb *FocusableButton) HandleInput(direction InputDirection) bool {
+func (fb *Button) HandleInput(direction InputDirection) bool {
 	if direction == DirectionConfirm && fb.OnClick != nil {
 		fb.OnClick()
 		return true
@@ -47,12 +52,43 @@ func (fb *FocusableButton) HandleInput(direction InputDirection) bool {
 }
 
 // Render renderiza o botão usando o sistema stateful
-func (fb *FocusableButton) Render(claySystem *ClayLayoutSystem) {
-	claySystem.CreateButton(fb.ID, fb.Label, fb.Config, fb.focused, fb.OnClick)
+func (fb *Button) Render() {
+	// Determinar estado atual baseado no foco
+	var currentState ButtonState
+	if fb.focused {
+		currentState = fb.Config.Focused
+	} else {
+		currentState = fb.Config.Normal
+	}
+
+	log.Printf("Creating new button: %s (focused: %t)", fb.ID, fb.focused)
+	clay.UI()(clay.ElementDeclaration{
+		Id: clay.ID(fb.ID),
+		Layout: clay.LayoutConfig{
+			Sizing: clay.Sizing{
+				Width:  fb.Config.Sizing.Width,
+				Height: fb.Config.Sizing.Height,
+			},
+			Padding: fb.Config.Padding,
+			ChildAlignment: clay.ChildAlignment{
+				X: clay.ALIGN_X_CENTER,
+				Y: clay.ALIGN_Y_CENTER,
+			},
+		},
+		CornerRadius:    clay.CornerRadiusAll(fb.Config.CornerRadius),
+		BackgroundColor: currentState.BackgroundColor,
+	}, func() {
+		// Texto do botão centralizado com cor do estado atual
+		clay.Text(fb.Label, &clay.TextElementConfig{
+			FontSize:  fb.Config.TextSize,
+			TextColor: currentState.TextColor,
+		})
+	})
+	log.Printf("New button created: %s", fb.ID)
 }
 
 // SetEnabled habilita/desabilita o botão
-func (fb *FocusableButton) SetEnabled(enabled bool) {
+func (fb *Button) SetEnabled(enabled bool) {
 	fb.enabled = enabled
 }
 

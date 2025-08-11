@@ -1,8 +1,9 @@
 package screen
 
 import (
+	"retroart-sdl2/internal/ui"
+
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 // Tipos de input suportados
@@ -20,7 +21,7 @@ const (
 // Interface para telas
 type Screen interface {
 	Update()
-	Render(renderer *sdl.Renderer)
+	Render()
 	HandleInput(input InputType)
 	OnEnter()
 	OnExit()
@@ -31,15 +32,13 @@ type Manager struct {
 	screens       map[string]Screen
 	currentScreen Screen
 	currentName   string
-	renderer      *sdl.Renderer
-	font          *ttf.Font
+	layout        *ui.Layout
 }
 
-func NewManager(renderer *sdl.Renderer, font *ttf.Font) *Manager {
+func NewManager(layout *ui.Layout) *Manager {
 	return &Manager{
-		screens:  make(map[string]Screen),
-		renderer: renderer,
-		font:     font,
+		screens: make(map[string]Screen),
+		layout:  layout,
 	}
 }
 
@@ -68,9 +67,11 @@ func (sm *Manager) Update() {
 	}
 }
 
-func (sm *Manager) Render(renderer *sdl.Renderer) {
+func (sm *Manager) Render() {
 	if sm.currentScreen != nil {
-		sm.currentScreen.Render(renderer)
+		sm.layout.BeginLayout()
+		sm.currentScreen.Render()
+		sm.layout.Render() // Renderizar o sistema ClayLayout após a tela
 	}
 }
 

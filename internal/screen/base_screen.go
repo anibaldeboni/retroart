@@ -52,7 +52,7 @@ type FocusableScreen interface {
 	HandleInput(direction ui.InputDirection) bool
 
 	// Render renderiza a tela
-	Render(claySystem *ui.ClayLayoutSystem)
+	Render(claySystem *ui.Layout)
 
 	// GetFocusManager retorna o gerenciador de foco
 	GetFocusManager() *ui.FocusManager

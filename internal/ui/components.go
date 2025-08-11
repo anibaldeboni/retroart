@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"log"
-
 	"github.com/TotallyGamerJet/clay"
 )
 
@@ -94,45 +92,4 @@ func DefaultTextConfig() TextConfig {
 		FontSize:  16,
 		TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 	}
-}
-
-// CreateButton cria um botão que gerencia seus próprios estados
-func (cls *ClayLayoutSystem) CreateButton(id string, text string, config ButtonConfig, isFocused bool, onClick func()) {
-	if !cls.enabled || !cls.isActive {
-		log.Printf("Clay not enabled or not active, skipping CreateStatefulButton: %s", id)
-		return
-	}
-
-	// Determinar estado atual baseado no foco
-	var currentState ButtonState
-	if isFocused {
-		currentState = config.Focused
-	} else {
-		currentState = config.Normal
-	}
-
-	log.Printf("Creating new button: %s (focused: %t)", id, isFocused)
-	clay.UI()(clay.ElementDeclaration{
-		Id: clay.ID(id),
-		Layout: clay.LayoutConfig{
-			Sizing: clay.Sizing{
-				Width:  config.Sizing.Width,
-				Height: config.Sizing.Height,
-			},
-			Padding: config.Padding,
-			ChildAlignment: clay.ChildAlignment{
-				X: clay.ALIGN_X_CENTER,
-				Y: clay.ALIGN_Y_CENTER,
-			},
-		},
-		CornerRadius:    clay.CornerRadiusAll(config.CornerRadius),
-		BackgroundColor: currentState.BackgroundColor,
-	}, func() {
-		// Texto do botão centralizado com cor do estado atual
-		clay.Text(text, &clay.TextElementConfig{
-			FontSize:  config.TextSize,
-			TextColor: currentState.TextColor,
-		})
-	})
-	log.Printf("New button created: %s", id)
 }

@@ -14,26 +14,22 @@ import (
 // Home é a versão refatorada da Home que usa o sistema de foco unificado
 type Home struct {
 	*BaseScreen
-	screenMgr  *Manager
-	claySystem *ui.ClayLayoutSystem
+	screenMgr *Manager
 
 	// Grupos focáveis
 	buttonGroup *ui.FocusGroup
 	listGroup   *ui.FocusGroup
 
 	// Widgets focáveis
-	buttons      []*ui.FocusableButton
+	buttons      []*ui.Button
 	checkboxList *ui.FocusableCheckboxList[string]
 }
 
-func NewHome(screenMgr *Manager, renderer *sdl.Renderer) *Home {
+func NewHome(screenMgr *Manager) *Home {
 	home := &Home{
 		BaseScreen: NewBaseScreen("home"),
 		screenMgr:  screenMgr,
 	}
-
-	// Criar sistema Clay para esta tela
-	home.claySystem = ui.NewClayLayoutSystem(renderer)
 
 	// Inicializar widgets focáveis
 	home.initializeWidgets()
@@ -47,15 +43,15 @@ func NewHome(screenMgr *Manager, renderer *sdl.Renderer) *Home {
 // initializeWidgets cria todos os widgets focáveis
 func (h *Home) initializeWidgets() {
 	// Criar botões focáveis
-	h.buttons = []*ui.FocusableButton{
-		ui.NewFocusableButton("next-button", "Próxima Tela", ui.PrimaryButtonConfig(), func() {
+	h.buttons = []*ui.Button{
+		ui.NewButton("next-button", "Próxima Tela", ui.PrimaryButtonConfig(), func() {
 			h.screenMgr.SetCurrentScreen("second")
 		}),
-		ui.NewFocusableButton("exit-button", "Sair", ui.DangerButtonConfig(), func() {
+		ui.NewButton("exit-button", "Sair", ui.DangerButtonConfig(), func() {
 			log.Println("Exit button pressed")
 			os.Exit(0)
 		}),
-		ui.NewFocusableButton("test-selected-button", "Mostrar Selecionados", ui.SecondaryButtonConfig(), func() {
+		ui.NewButton("test-selected-button", "Mostrar Selecionados", ui.SecondaryButtonConfig(), func() {
 			selectedItems := h.checkboxList.GetSelectedItems()
 			log.Printf("Selected games: %v", selectedItems)
 		}),
@@ -105,20 +101,12 @@ func (h *Home) InitializeFocus() {
 
 // Implementação da interface Screen
 
-// Update - implementação vazia por enquanto
 func (h *Home) Update() {
 	// Lógica de atualização se necessária
 }
 
 // Render - interface Screen (wrapper para o método Clay)
-func (h *Home) Render(renderer *sdl.Renderer) {
-	h.RenderWithClay()
-}
-
-// RenderWithClay - método específico para renderização Clay
-func (h *Home) RenderWithClay() {
-	h.claySystem.BeginLayout()
-
+func (h *Home) Render() {
 	// Layout principal horizontal
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
@@ -214,7 +202,7 @@ func (h *Home) RenderWithClay() {
 			}, func() {
 				// Renderizar todos os botões focáveis
 				for _, button := range h.buttons {
-					button.Render(h.claySystem)
+					button.Render()
 				}
 			})
 
@@ -244,9 +232,6 @@ func (h *Home) RenderWithClay() {
 			})
 		})
 	})
-
-	// Finalizar e renderizar
-	h.claySystem.Render()
 }
 
 // HandleInput - compatibilidade com screen.InputType

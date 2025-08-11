@@ -54,26 +54,14 @@ func (app *App) Init() error {
 		return fmt.Errorf("erro ao criar renderer: %v", err)
 	}
 	app.renderer = renderer
-
-	// Inicializar Clay globalmente
-	if err := ui.InitializeClayGlobally(); err != nil {
-		return fmt.Errorf("erro ao inicializar Clay: %v", err)
-	}
-
-	// Configurar sistema de fontes para o Clay
-	if err := ui.InitializeFontSystem(); err != nil {
-		return fmt.Errorf("erro ao inicializar sistema de fontes: %v", err)
-	}
+	layout := ui.NewLayout(renderer)
 
 	// Inicializar gerenciador de telas
-	app.screenMgr = screen.NewManager(app.renderer, nil) // Usar sistema de cache de fontes
+	app.screenMgr = screen.NewManager(layout) // Usar sistema de cache de fontes
 
-	// Adicionar telas
-	// app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
-	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer))     // Usar sistema de cache
-	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer)) // Usar sistema de cache
+	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr))     // Usar sistema de cache
+	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr)) // Usar sistema de cache
 
-	// Definir tela inicial
 	app.screenMgr.SetCurrentScreen("home")
 
 	app.running = true
@@ -146,7 +134,7 @@ func (app *App) render() {
 	app.renderer.Clear()
 
 	// Renderizar tela atual
-	app.screenMgr.Render(app.renderer)
+	app.screenMgr.Render()
 
 	// Apresentar frame
 	app.renderer.Present()
