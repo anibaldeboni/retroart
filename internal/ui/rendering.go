@@ -152,9 +152,10 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 	config := &command.RenderData.Text
 	boundingBox := command.BoundingBox
 
-	// Usar a fonte do ClayLayoutSystem
-	if cls.font == nil {
-		log.Println("Warning: No font available for text rendering")
+	// Obter a fonte do FontSystem baseada no tamanho especificado
+	font := GetFontForSize(config.FontSize)
+	if font == nil {
+		log.Printf("Warning: No font available for text rendering with size %d", config.FontSize)
 		return nil
 	}
 
@@ -184,8 +185,8 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 		A: uint8(config.TextColor.A),
 	}
 
-	log.Printf("renderText: Attempting to render text '%s' with font", text)
-	surface, err := cls.font.RenderUTF8Blended(text, color)
+	log.Printf("renderText: Attempting to render text '%s' with font size %d", text, config.FontSize)
+	surface, err := font.RenderUTF8Blended(text, color)
 	if err != nil {
 		log.Printf("Error creating text surface: %v", err)
 		return err

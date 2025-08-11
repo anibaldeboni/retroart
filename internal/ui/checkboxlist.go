@@ -307,7 +307,7 @@ func (cl *CheckboxList[T]) renderCheckbox(itemIndex int) {
 	}, func() {
 		if item.Selected {
 			clay.Text("◣", &clay.TextElementConfig{
-				FontSize:  24,
+				FontSize:  16,
 				TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
 			})
 		}

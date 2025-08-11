@@ -7,7 +7,6 @@ import (
 
 	"github.com/TotallyGamerJet/clay"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 type Second struct {
@@ -22,14 +21,14 @@ type Second struct {
 	buttonGroup *ui.FocusGroup
 }
 
-func NewSecond(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Second {
+func NewSecond(screenMgr *Manager, renderer *sdl.Renderer) *Second {
 	screen := &Second{
 		BaseScreen: NewBaseScreen("second-screen"),
 		screenMgr:  screenMgr,
 	}
 
 	// Criar sistema Clay para esta tela
-	screen.claySystem = ui.NewClayLayoutSystem(renderer, font)
+	screen.claySystem = ui.NewClayLayoutSystem(renderer)
 
 	screen.initializeWidgets()
 	screen.InitializeFocus()

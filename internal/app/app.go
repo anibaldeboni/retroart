@@ -70,8 +70,8 @@ func (app *App) Init() error {
 
 	// Adicionar telas
 	// app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, app.font))
-	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer, nil))     // Usar sistema de cache
-	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer, nil)) // Usar sistema de cache
+	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr, app.renderer))     // Usar sistema de cache
+	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr, app.renderer)) // Usar sistema de cache
 
 	// Definir tela inicial
 	app.screenMgr.SetCurrentScreen("home")

@@ -5,29 +5,18 @@ import (
 
 	"github.com/TotallyGamerJet/clay"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 // ClayLayoutSystem gerencia o sistema de layout Clay
 type ClayLayoutSystem struct {
-	font     *ttf.Font
 	renderer *sdl.Renderer
 	enabled  bool
 	isActive bool
 }
 
 // NewClayLayoutSystem cria um novo sistema de layout Clay
-func NewClayLayoutSystem(renderer *sdl.Renderer, font *ttf.Font) *ClayLayoutSystem {
-	// Se não foi fornecida uma fonte, usar uma fonte padrão do cache
-	if font == nil {
-		font = GetFontForSize(16) // Fonte padrão de 16 pixels
-		if font == nil {
-			log.Println("Warning: Could not get default font from cache")
-		}
-	}
-
+func NewClayLayoutSystem(renderer *sdl.Renderer) *ClayLayoutSystem {
 	cls := &ClayLayoutSystem{
-		font:     font,
 		renderer: renderer,
 		enabled:  false,
 		isActive: false,

@@ -6,7 +6,6 @@ import (
 
 	"github.com/TotallyGamerJet/clay"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/ui"
@@ -27,14 +26,14 @@ type Home struct {
 	checkboxList *ui.FocusableCheckboxList[string]
 }
 
-func NewHome(screenMgr *Manager, renderer *sdl.Renderer, font *ttf.Font) *Home {
+func NewHome(screenMgr *Manager, renderer *sdl.Renderer) *Home {
 	home := &Home{
 		BaseScreen: NewBaseScreen("home"),
 		screenMgr:  screenMgr,
 	}
 
 	// Criar sistema Clay para esta tela
-	home.claySystem = ui.NewClayLayoutSystem(renderer, font)
+	home.claySystem = ui.NewClayLayoutSystem(renderer)
 
 	// Inicializar widgets focáveis
 	home.initializeWidgets()

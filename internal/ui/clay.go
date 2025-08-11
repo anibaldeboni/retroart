@@ -226,9 +226,3 @@ func GetFontForSize(size uint16) *ttf.Font {
 
 	return fontCache[closestSize]
 }
-
-// SetGlobalFont configura a fonte global para medição de texto (deprecated)
-func SetGlobalFont(font *ttf.Font) {
-	// Esta função agora é deprecated, mas mantida para compatibilidade
-	log.Println("SetGlobalFont is deprecated - using font system instead")
-}
