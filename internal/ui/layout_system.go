@@ -62,9 +62,8 @@ func (cls *ClayLayoutSystem) BeginLayout() {
 	log.Printf("Arena reset to offset: %d", arenaResetOffset)
 
 	cls.isActive = true
-	log.Println("Calling clay.BeginLayout()")
 	clay.BeginLayout()
-	log.Println("clay.BeginLayout() completed")
+	log.Println("BeginLayout: completed")
 }
 
 // EndLayout finaliza o layout e retorna os comandos de renderização
@@ -74,9 +73,9 @@ func (cls *ClayLayoutSystem) EndLayout() clay.RenderCommandArray {
 		return clay.RenderCommandArray{}
 	}
 	cls.isActive = false
-	log.Println("Calling clay.EndLayout()")
+
 	commands := clay.EndLayout()
-	log.Printf("clay.EndLayout() completed, got %d commands", commands.Length)
+	log.Printf("EndLayout: completed, got %d commands", commands.Length)
 	return commands
 }
 
@@ -109,7 +108,7 @@ func (cls *ClayLayoutSystem) RenderClayCommands(commands clay.RenderCommandArray
 		switch command.CommandType {
 		case clay.RENDER_COMMAND_TYPE_RECTANGLE:
 			config := &command.RenderData.Rectangle
-			log.Printf("Clay Rectangle Command %d: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f, Color R=%.0f G=%.0f B=%.0f A=%.0f",
+			log.Printf("ClayRectangleCommand %d: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f, Color R=%.0f G=%.0f B=%.0f A=%.0f",
 				i, command.BoundingBox.X, command.BoundingBox.Y, command.BoundingBox.Width, command.BoundingBox.Height,
 				config.BackgroundColor.R, config.BackgroundColor.G, config.BackgroundColor.B, config.BackgroundColor.A)
 			err := cls.renderRectangle(command)

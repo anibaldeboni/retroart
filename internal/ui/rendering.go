@@ -159,17 +159,11 @@ func (cls *ClayLayoutSystem) renderText(command *clay.RenderCommand) error {
 		return nil
 	}
 
-	// Log debugging information
-	log.Printf("renderText: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f",
-		boundingBox.X, boundingBox.Y, boundingBox.Width, boundingBox.Height)
-
 	text := config.StringContents.String()
 	if text == "" {
 		log.Println("Warning: Empty text content")
 		return nil
 	}
-
-	log.Printf("renderText: Text='%s'", text)
 
 	// Check for zero width and skip rendering if so
 	if boundingBox.Width <= 0 || boundingBox.Height <= 0 {
@@ -185,7 +179,6 @@ func (cls *ClayLayoutSystem) renderText(command *clay.RenderCommand) error {
 		A: uint8(config.TextColor.A),
 	}
 
-	log.Printf("renderText: Attempting to render text '%s' with font size %d", text, config.FontSize)
 	surface, err := font.RenderUTF8Blended(text, color)
 	if err != nil {
 		log.Printf("Error creating text surface: %v", err)
@@ -193,7 +186,7 @@ func (cls *ClayLayoutSystem) renderText(command *clay.RenderCommand) error {
 	}
 	defer surface.Free()
 
-	log.Printf("renderText: Surface created successfully, W=%d H=%d", surface.W, surface.H)
+	log.Printf("renderText: Text='%s' FontSize=%d BoundingBox(X=%.2f Y=%.2f W=%.2f H=%.2f) Surface(W=%d H=%d)", text, config.FontSize, boundingBox.X, boundingBox.Y, boundingBox.Width, boundingBox.Height, surface.W, surface.H)
 
 	texture, err := cls.renderer.CreateTextureFromSurface(surface)
 	if err != nil {
