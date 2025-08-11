@@ -86,19 +86,16 @@ func (cls *ClayLayoutSystem) Render() {
 		return
 	}
 
-	// Finalizar layout e obter comandos
 	commands := cls.EndLayout()
 
-	// Renderizar comandos
-
-	err := cls.RenderClayCommands(cls.renderer, commands)
+	err := cls.RenderClayCommands(commands)
 	if err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}
 }
 
 // RenderClayCommands renderiza os comandos Clay no renderer SDL2
-func (cls *ClayLayoutSystem) RenderClayCommands(renderer *sdl.Renderer, commands clay.RenderCommandArray) error {
+func (cls *ClayLayoutSystem) RenderClayCommands(commands clay.RenderCommandArray) error {
 	if !cls.enabled {
 		return nil
 	}
@@ -115,36 +112,35 @@ func (cls *ClayLayoutSystem) RenderClayCommands(renderer *sdl.Renderer, commands
 			log.Printf("Clay Rectangle Command %d: BoundingBox X=%.2f Y=%.2f W=%.2f H=%.2f, Color R=%.0f G=%.0f B=%.0f A=%.0f",
 				i, command.BoundingBox.X, command.BoundingBox.Y, command.BoundingBox.Width, command.BoundingBox.Height,
 				config.BackgroundColor.R, config.BackgroundColor.G, config.BackgroundColor.B, config.BackgroundColor.A)
-			err := cls.renderRectangle(renderer, command)
+			err := cls.renderRectangle(command)
 			if err != nil {
 				log.Printf("Error rendering rectangle: %v", err)
 				return err
 			}
 		case clay.RENDER_COMMAND_TYPE_TEXT:
-			err := cls.renderText(renderer, command)
+			err := cls.renderText(command)
 			if err != nil {
 				log.Printf("Error rendering text: %v", err)
 				return err
 			}
 		case clay.RENDER_COMMAND_TYPE_BORDER:
 			log.Printf("Rendering border command")
-			err := cls.renderBorder(renderer, command)
+			err := cls.renderBorder(command)
 			if err != nil {
 				return err
 			}
 		case clay.RENDER_COMMAND_TYPE_SCISSOR_START:
-			err := cls.renderScissorStart(renderer, command)
+			err := cls.renderScissorStart(command)
 			if err != nil {
 				return err
 			}
 		case clay.RENDER_COMMAND_TYPE_SCISSOR_END:
-			err := cls.renderScissorEnd(renderer)
+			err := cls.renderScissorEnd()
 			if err != nil {
 				return err
 			}
 		default:
-			// Comandos não implementados são ignorados
-			log.Printf("Comando não implementado: %v", command.CommandType)
+			log.Printf("Command not implemented: %v", command.CommandType)
 		}
 	}
 

@@ -9,12 +9,12 @@ import (
 )
 
 // renderRectangle renderiza um retângulo com suporte a cantos arredondados
-func (cls *ClayLayoutSystem) renderRectangle(renderer *sdl.Renderer, command *clay.RenderCommand) error {
+func (cls *ClayLayoutSystem) renderRectangle(command *clay.RenderCommand) error {
 	config := &command.RenderData.Rectangle
 	boundingBox := command.BoundingBox
 
 	// Definir cor de fundo
-	renderer.SetDrawColor(
+	cls.renderer.SetDrawColor(
 		uint8(config.BackgroundColor.R),
 		uint8(config.BackgroundColor.G),
 		uint8(config.BackgroundColor.B),
@@ -28,7 +28,7 @@ func (cls *ClayLayoutSystem) renderRectangle(renderer *sdl.Renderer, command *cl
 
 	if hasRoundedCorners {
 		// Renderizar retângulo com cantos arredondados
-		return cls.renderRoundedRectangle(renderer, boundingBox, cornerRadius)
+		return cls.renderRoundedRectangle(boundingBox, cornerRadius)
 	} else {
 		// Renderizar retângulo normal
 		rect := sdl.Rect{
@@ -37,12 +37,12 @@ func (cls *ClayLayoutSystem) renderRectangle(renderer *sdl.Renderer, command *cl
 			W: int32(boundingBox.Width),
 			H: int32(boundingBox.Height),
 		}
-		return renderer.FillRect(&rect)
+		return cls.renderer.FillRect(&rect)
 	}
 }
 
 // renderRoundedRectangle renderiza um retângulo com cantos arredondados
-func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boundingBox clay.BoundingBox, cornerRadius clay.CornerRadius) error {
+func (cls *ClayLayoutSystem) renderRoundedRectangle(boundingBox clay.BoundingBox, cornerRadius clay.CornerRadius) error {
 	x := int32(boundingBox.X)
 	y := int32(boundingBox.Y)
 	w := int32(boundingBox.Width)
@@ -74,7 +74,7 @@ func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boun
 			W: w - 2*radius,
 			H: h,
 		}
-		renderer.FillRect(&centerRect)
+		cls.renderer.FillRect(&centerRect)
 
 		leftRect := sdl.Rect{
 			X: x,
@@ -82,7 +82,7 @@ func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boun
 			W: radius,
 			H: h - 2*radius,
 		}
-		renderer.FillRect(&leftRect)
+		cls.renderer.FillRect(&leftRect)
 
 		rightRect := sdl.Rect{
 			X: x + w - radius,
@@ -90,24 +90,24 @@ func (cls *ClayLayoutSystem) renderRoundedRectangle(renderer *sdl.Renderer, boun
 			W: radius,
 			H: h - 2*radius,
 		}
-		renderer.FillRect(&rightRect)
+		cls.renderer.FillRect(&rightRect)
 
 		// Renderizar cantos arredondados
-		cls.renderFilledCircle(renderer, x+radius, y+radius, radius)
-		cls.renderFilledCircle(renderer, x+w-radius-1, y+radius, radius)
-		cls.renderFilledCircle(renderer, x+radius, y+h-radius-1, radius)
-		cls.renderFilledCircle(renderer, x+w-radius-1, y+h-radius-1, radius)
+		cls.renderFilledCircle(x+radius, y+radius, radius)
+		cls.renderFilledCircle(x+w-radius-1, y+radius, radius)
+		cls.renderFilledCircle(x+radius, y+h-radius-1, radius)
+		cls.renderFilledCircle(x+w-radius-1, y+h-radius-1, radius)
 	} else {
 		rect := sdl.Rect{X: x, Y: y, W: w, H: h}
-		renderer.FillRect(&rect)
+		cls.renderer.FillRect(&rect)
 	}
 
 	return nil
 }
 
 // renderFilledCircle renderiza um círculo preenchido
-func (cls *ClayLayoutSystem) renderFilledCircle(renderer *sdl.Renderer, centerX, centerY, radius int32) {
-	r, g, b, a, _ := renderer.GetDrawColor()
+func (cls *ClayLayoutSystem) renderFilledCircle(centerX, centerY, radius int32) {
+	r, g, b, a, _ := cls.renderer.GetDrawColor()
 
 	subPixelRadius := float32(radius) + 0.5
 
@@ -117,13 +117,13 @@ func (cls *ClayLayoutSystem) renderFilledCircle(renderer *sdl.Renderer, centerX,
 
 			if coverage > 0 {
 				alpha := uint8(float32(a) * coverage)
-				renderer.SetDrawColor(r, g, b, alpha)
-				renderer.DrawPoint(centerX+x, centerY+y)
+				cls.renderer.SetDrawColor(r, g, b, alpha)
+				cls.renderer.DrawPoint(centerX+x, centerY+y)
 			}
 		}
 	}
 
-	renderer.SetDrawColor(r, g, b, a)
+	cls.renderer.SetDrawColor(r, g, b, a)
 }
 
 // calculatePixelCoverage calcula cobertura de pixel
@@ -148,7 +148,7 @@ func (cls *ClayLayoutSystem) calculatePixelCoverage(x, y, radius float32) float3
 }
 
 // renderText renderiza texto
-func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.RenderCommand) error {
+func (cls *ClayLayoutSystem) renderText(command *clay.RenderCommand) error {
 	config := &command.RenderData.Text
 	boundingBox := command.BoundingBox
 
@@ -195,7 +195,7 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 
 	log.Printf("renderText: Surface created successfully, W=%d H=%d", surface.W, surface.H)
 
-	texture, err := renderer.CreateTextureFromSurface(surface)
+	texture, err := cls.renderer.CreateTextureFromSurface(surface)
 	if err != nil {
 		log.Printf("Error creating texture from surface: %v", err)
 		return err
@@ -225,15 +225,15 @@ func (cls *ClayLayoutSystem) renderText(renderer *sdl.Renderer, command *clay.Re
 		H: textHeight,
 	}
 
-	return renderer.Copy(texture, nil, &destRect)
+	return cls.renderer.Copy(texture, nil, &destRect)
 }
 
 // renderBorder renderiza borda
-func (cls *ClayLayoutSystem) renderBorder(renderer *sdl.Renderer, command *clay.RenderCommand) error {
+func (cls *ClayLayoutSystem) renderBorder(command *clay.RenderCommand) error {
 	config := &command.RenderData.Border
 	boundingBox := command.BoundingBox
 
-	renderer.SetDrawColor(
+	cls.renderer.SetDrawColor(
 		uint8(config.Color.R),
 		uint8(config.Color.G),
 		uint8(config.Color.B),
@@ -248,7 +248,7 @@ func (cls *ClayLayoutSystem) renderBorder(renderer *sdl.Renderer, command *clay.
 			W: int32(boundingBox.Width),
 			H: int32(config.Width.Top),
 		}
-		renderer.FillRect(&rect)
+		cls.renderer.FillRect(&rect)
 	}
 
 	if config.Width.Bottom > 0 {
@@ -258,7 +258,7 @@ func (cls *ClayLayoutSystem) renderBorder(renderer *sdl.Renderer, command *clay.
 			W: int32(boundingBox.Width),
 			H: int32(config.Width.Bottom),
 		}
-		renderer.FillRect(&rect)
+		cls.renderer.FillRect(&rect)
 	}
 
 	if config.Width.Left > 0 {
@@ -268,7 +268,7 @@ func (cls *ClayLayoutSystem) renderBorder(renderer *sdl.Renderer, command *clay.
 			W: int32(config.Width.Left),
 			H: int32(boundingBox.Height),
 		}
-		renderer.FillRect(&rect)
+		cls.renderer.FillRect(&rect)
 	}
 
 	if config.Width.Right > 0 {
@@ -278,14 +278,14 @@ func (cls *ClayLayoutSystem) renderBorder(renderer *sdl.Renderer, command *clay.
 			W: int32(config.Width.Right),
 			H: int32(boundingBox.Height),
 		}
-		renderer.FillRect(&rect)
+		cls.renderer.FillRect(&rect)
 	}
 
 	return nil
 }
 
 // renderScissorStart inicia recorte
-func (cls *ClayLayoutSystem) renderScissorStart(renderer *sdl.Renderer, command *clay.RenderCommand) error {
+func (cls *ClayLayoutSystem) renderScissorStart(command *clay.RenderCommand) error {
 	boundingBox := command.BoundingBox
 
 	clipRect := sdl.Rect{
@@ -295,10 +295,10 @@ func (cls *ClayLayoutSystem) renderScissorStart(renderer *sdl.Renderer, command 
 		H: int32(boundingBox.Height),
 	}
 
-	return renderer.SetClipRect(&clipRect)
+	return cls.renderer.SetClipRect(&clipRect)
 }
 
 // renderScissorEnd termina recorte
-func (cls *ClayLayoutSystem) renderScissorEnd(renderer *sdl.Renderer) error {
-	return renderer.SetClipRect(nil)
+func (cls *ClayLayoutSystem) renderScissorEnd() error {
+	return cls.renderer.SetClipRect(nil)
 }

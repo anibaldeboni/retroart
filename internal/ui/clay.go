@@ -201,12 +201,10 @@ func GetFontForSize(size uint16) *ttf.Font {
 		return nil
 	}
 
-	// Primeiro, tentar o tamanho exato
 	if font, exists := fontCache[size]; exists {
 		return font
 	}
 
-	// Se não existe, procurar o tamanho mais próximo
 	var closestSize uint16
 	var minDiff uint16 = 1000
 
