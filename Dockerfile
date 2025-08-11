@@ -8,6 +8,7 @@ RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get install -y \
     wget \
+    file \
     build-essential \
     ca-certificates \
     pkg-config \
