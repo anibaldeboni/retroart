@@ -7,6 +7,7 @@ import (
 	"github.com/veandco/go-sdl2/ttf"
 
 	"retroart-sdl2/internal/core"
+	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/screen"
 	"retroart-sdl2/internal/ui"
 )
@@ -14,7 +15,6 @@ import (
 type App struct {
 	window    *sdl.Window
 	renderer  *sdl.Renderer
-	font      *ttf.Font
 	running   bool
 	screenMgr *screen.Manager
 }
@@ -55,19 +55,6 @@ func (app *App) Init() error {
 	}
 	app.renderer = renderer
 
-	// Carregar fonte
-	font, err := ttf.OpenFont("assets/DejaVuSansCondensed.ttf", 16)
-	if err != nil {
-		// Se não conseguir carregar a fonte personalizada, usar uma fonte padrão do sistema
-		fmt.Printf("Aviso: Não foi possível carregar fonte personalizada: %v\n", err)
-		// Tentar carregar uma fonte do sistema (macOS)
-		font, err = ttf.OpenFont("/System/Library/Fonts/Helvetica.ttc", 16)
-		if err != nil {
-			return fmt.Errorf("erro ao carregar fonte do sistema: %v", err)
-		}
-	}
-	app.font = font
-
 	// Inicializar Clay globalmente
 	if err := ui.InitializeClayGlobally(); err != nil {
 		return fmt.Errorf("erro ao inicializar Clay: %v", err)
@@ -95,17 +82,13 @@ func (app *App) Init() error {
 
 func (app *App) Run() {
 	targetFrameTime := uint64(1000 / core.FPS) // ms por frame
+	inputCh := input.Initialize()
 
 	for app.running {
 		frameStart := sdl.GetTicks64()
 
-		// Processar eventos
-		app.handleEvents()
-
-		// Atualizar
+		app.handleEvents(inputCh)
 		app.update()
-
-		// Renderizar
 		app.render()
 
 		// Controle de FPS
@@ -116,15 +99,39 @@ func (app *App) Run() {
 	}
 }
 
-func (app *App) handleEvents() {
+func (app *App) handleEvents(inputCh <-chan input.InputEvent) {
+	select {
+	case inputEvent := <-inputCh:
+		if inputEvent.Pressed {
+			var keycode sdl.Keycode
+			switch inputEvent.Type {
+			case input.InputUp:
+				keycode = sdl.K_UP
+			case input.InputDown:
+				keycode = sdl.K_DOWN
+			case input.InputLeft:
+				keycode = sdl.K_LEFT
+			case input.InputRight:
+				keycode = sdl.K_RIGHT
+			case input.InputConfirm:
+				keycode = sdl.K_RETURN
+			case input.InputBack:
+				keycode = sdl.K_ESCAPE
+			case input.InputMenu:
+				keycode = sdl.K_SPACE
+			default:
+				return
+			}
+
+			app.screenMgr.HandleInput(keycode)
+		}
+	default:
+	}
+
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch e := event.(type) {
+		switch event.(type) {
 		case *sdl.QuitEvent:
 			app.running = false
-		case *sdl.KeyboardEvent:
-			if e.Type == sdl.KEYDOWN {
-				app.screenMgr.HandleInput(e.Keysym.Sym)
-			}
 		}
 	}
 }
@@ -146,9 +153,6 @@ func (app *App) render() {
 }
 
 func (app *App) Cleanup() {
-	if app.font != nil {
-		app.font.Close()
-	}
 	if app.renderer != nil {
 		app.renderer.Destroy()
 	}
