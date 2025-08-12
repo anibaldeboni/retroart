@@ -8,6 +8,7 @@ import (
 
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/theme"
 	"retroart-sdl2/internal/ui"
 	"retroart-sdl2/internal/ui/widgets"
 )
@@ -29,18 +30,18 @@ func NewHome() *Home {
 
 // initializeWidgets cria todos os widgets focáveis
 func (h *Home) initializeWidgets() {
-	// Criar botões focáveis
+	// Criar botões focáveis usando design system
 	h.buttons = []*widgets.Button{
-		widgets.NewButton("next-button", "Second screen", widgets.PrimaryButtonConfig(), func() {
+		widgets.NewButtonWithStyle("next-button", "Second screen", theme.StylePrimary, func() {
 			if h.navigator != nil {
 				h.navigator.NavigateTo("second")
 			}
 		}),
-		widgets.NewButton("exit-button", "Exit", widgets.DangerButtonConfig(), func() {
+		widgets.NewButtonWithStyle("exit-button", "Exit", theme.StyleDanger, func() {
 			log.Println("Exit button pressed")
 			os.Exit(0)
 		}),
-		widgets.NewButton("test-selected-button", "Show Selected", widgets.SecondaryButtonConfig(), func() {
+		widgets.NewButtonWithStyle("test-selected-button", "Show Selected", theme.StyleSecondary, func() {
 			selectedItems := h.checkboxList.GetSelectedItems()
 			log.Printf("Selected games: %v", selectedItems)
 		}),
@@ -66,7 +67,7 @@ func (h *Home) initializeWidgets() {
 		{Label: "PlayStation", Value: "game16", Selected: false},
 	}
 
-	h.checkboxList = widgets.NewCheckboxList("consoles-checkbox-list", testItems, widgets.DefaultCheckboxListConfig())
+	h.checkboxList = widgets.NewCheckboxList("consoles-checkbox-list", testItems)
 }
 
 // InitializeFocus configura os widgets no sistema de navegação espacial
@@ -91,6 +92,12 @@ func (h *Home) Update() {
 
 // Render - interface Screen (wrapper para o método Clay)
 func (h *Home) Render() {
+	mainStyle := theme.GetMainContainerStyle()
+	contentStyle := theme.GetContentContainerStyle()
+	colors := theme.GetColors()
+	spacing := theme.GetSpacing()
+	typography := theme.GetTypography()
+
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
 		Layout: clay.LayoutConfig{
@@ -98,11 +105,11 @@ func (h *Home) Render() {
 				Width:  clay.SizingGrow(core.WINDOW_WIDTH),
 				Height: clay.SizingGrow(core.WINDOW_HEIGHT),
 			},
-			Padding:         clay.PaddingAll(20),
-			ChildGap:        15,
+			Padding:         clay.Padding{Left: spacing.LG, Right: spacing.LG, Top: spacing.LG, Bottom: spacing.LG},
+			ChildGap:        spacing.MD,
 			LayoutDirection: clay.LEFT_TO_RIGHT,
 		},
-		BackgroundColor: clay.Color{R: 40, G: 42, B: 54, A: 255},
+		BackgroundColor: mainStyle.BackgroundColor,
 	}, func() {
 		// Container para lista de checkboxes (lado esquerdo)
 		clay.UI()(clay.ElementDeclaration{
@@ -112,12 +119,12 @@ func (h *Home) Render() {
 					Width:  clay.SizingPercent(0.35),
 					Height: clay.SizingPercent(1.0),
 				},
-				Padding:         clay.PaddingAll(15),
-				ChildGap:        10,
+				Padding:         contentStyle.Padding,
+				ChildGap:        spacing.SM,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 			},
-			CornerRadius:    clay.CornerRadiusAll(12),
-			BackgroundColor: clay.Color{R: 60, G: 63, B: 75, A: 180},
+			CornerRadius:    clay.CornerRadiusAll(contentStyle.CornerRadius),
+			BackgroundColor: contentStyle.BackgroundColor,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{
@@ -129,13 +136,13 @@ func (h *Home) Render() {
 				},
 			}, func() {
 				clay.Text("Games list", &clay.TextElementConfig{
-					FontSize:  20,
-					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+					FontSize:  typography.Large,
+					TextColor: colors.TextPrimary,
 				})
 			})
 
 			// Renderizar checkbox list focável
-			h.checkboxList.Render(core.WINDOW_HEIGHT - 170)
+			h.checkboxList.Render(core.WINDOW_HEIGHT - 220)
 		})
 
 		// Container para botões (lado direito)
@@ -146,15 +153,15 @@ func (h *Home) Render() {
 					Width:  clay.SizingPercent(0.65),
 					Height: clay.SizingPercent(1.0),
 				},
-				Padding:         clay.PaddingAll(15),
-				ChildGap:        15,
+				Padding:         contentStyle.Padding,
+				ChildGap:        spacing.MD,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 				ChildAlignment: clay.ChildAlignment{
 					X: clay.ALIGN_X_CENTER,
 				},
 			},
-			CornerRadius:    clay.CornerRadiusAll(12),
-			BackgroundColor: clay.Color{R: 60, G: 63, B: 75, A: 180},
+			CornerRadius:    clay.CornerRadiusAll(contentStyle.CornerRadius),
+			BackgroundColor: contentStyle.BackgroundColor,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{
@@ -166,8 +173,8 @@ func (h *Home) Render() {
 				},
 			}, func() {
 				clay.Text("Controls", &clay.TextElementConfig{
-					FontSize:  24,
-					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+					FontSize:  typography.XLarge,
+					TextColor: colors.TextPrimary,
 				})
 			})
 
@@ -175,8 +182,8 @@ func (h *Home) Render() {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("buttons-container"),
 				Layout: clay.LayoutConfig{
-					Padding:         clay.PaddingAll(10),
-					ChildGap:        15,
+					Padding:         clay.Padding{Left: spacing.SM, Right: spacing.SM, Top: spacing.SM, Bottom: spacing.SM},
+					ChildGap:        spacing.MD,
 					LayoutDirection: clay.TOP_TO_BOTTOM,
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
@@ -217,8 +224,8 @@ func (h *Home) Render() {
 				}
 
 				clay.Text(focusInfo, &clay.TextElementConfig{
-					FontSize:  12,
-					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+					FontSize:  typography.XSmall,
+					TextColor: colors.TextMuted,
 				})
 			})
 		})

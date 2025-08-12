@@ -3,6 +3,7 @@ package widgets
 import (
 	"log"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/theme"
 
 	"github.com/TotallyGamerJet/clay"
 )
@@ -17,41 +18,14 @@ type Button struct {
 }
 
 // ButtonConfig contém configurações para diferentes estados do botão
-type ButtonConfig struct {
-	Sizing       clay.Sizing
-	Padding      clay.Padding
-	TextSize     uint16
-	CornerRadius float32
-
-	Normal  ButtonState
-	Focused ButtonState
-}
+type ButtonConfig = theme.ButtonStyle
 
 // ButtonState define a aparência de um estado específico do botão
-type ButtonState struct {
-	BackgroundColor clay.Color
-	TextColor       clay.Color
-}
+type ButtonState = theme.ButtonState
 
 // DefaultButtonConfig retorna uma configuração padrão para botões com estado
 func DefaultButtonConfig() ButtonConfig {
-	return ButtonConfig{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingFixed(220),
-			Height: clay.SizingFixed(45),
-		},
-		Padding:      clay.Padding{Left: 20, Right: 20, Top: 12, Bottom: 12},
-		TextSize:     16,
-		CornerRadius: 12,
-		Normal: ButtonState{
-			BackgroundColor: clay.Color{R: 70, G: 130, B: 220, A: 200},
-			TextColor:       clay.Color{R: 220, G: 230, B: 255, A: 255},
-		},
-		Focused: ButtonState{
-			BackgroundColor: clay.Color{R: 30, G: 150, B: 255, A: 255},
-			TextColor:       clay.Color{R: 255, G: 255, B: 255, A: 255},
-		},
-	}
+	return theme.GetButtonStyle(theme.StylePrimary)
 }
 
 // CreateButtonConfig cria uma configuração personalizada para botão com estado
@@ -66,30 +40,15 @@ func CreateButtonConfig(normalBg, focusedBg, normalText, focusedText clay.Color)
 
 // Configurações predefinidas para diferentes tipos de botões
 func PrimaryButtonConfig() ButtonConfig {
-	return CreateButtonConfig(
-		clay.Color{R: 50, G: 120, B: 200, A: 200},  // Azul normal
-		clay.Color{R: 30, G: 150, B: 255, A: 255},  // Azul vibrante focado
-		clay.Color{R: 220, G: 230, B: 255, A: 255}, // Texto azul claro
-		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
-	)
+	return theme.GetButtonStyle(theme.StylePrimary)
 }
 
 func DangerButtonConfig() ButtonConfig {
-	return CreateButtonConfig(
-		clay.Color{R: 200, G: 60, B: 60, A: 180},   // Vermelho normal
-		clay.Color{R: 255, G: 80, B: 80, A: 255},   // Vermelho vibrante focado
-		clay.Color{R: 255, G: 200, B: 200, A: 255}, // Texto vermelho claro
-		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
-	)
+	return theme.GetButtonStyle(theme.StyleDanger)
 }
 
 func SecondaryButtonConfig() ButtonConfig {
-	return CreateButtonConfig(
-		clay.Color{R: 120, G: 60, B: 200, A: 180},  // Roxo normal
-		clay.Color{R: 150, G: 80, B: 255, A: 255},  // Roxo vibrante focado
-		clay.Color{R: 220, G: 200, B: 255, A: 255}, // Texto roxo claro
-		clay.Color{R: 255, G: 255, B: 255, A: 255}, // Texto branco focado
-	)
+	return theme.GetButtonStyle(theme.StyleSecondary)
 }
 
 // NewButton cria um novo botão focável
@@ -101,6 +60,11 @@ func NewButton(id, label string, config ButtonConfig, onClick func()) *Button {
 		OnClick: onClick,
 		enabled: true,
 	}
+}
+
+// NewButtonWithStyle cria um novo botão usando o design system
+func NewButtonWithStyle(id, label string, styleType theme.ComponentStyleType, onClick func()) *Button {
+	return NewButton(id, label, theme.GetButtonStyle(styleType), onClick)
 }
 
 // Interface Focusable implementation

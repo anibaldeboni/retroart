@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/theme"
 
 	"github.com/TotallyGamerJet/clay"
 )
@@ -15,16 +16,7 @@ type CheckboxListItem[T any] struct {
 	Selected bool
 }
 
-type CheckboxListConfig struct {
-	Sizing          clay.Sizing
-	Padding         clay.Padding
-	ChildGap        uint16
-	BackgroundColor clay.Color
-	MaxHeight       float32
-	ScrollOffset    int
-	CheckboxSize    float32
-	ItemHeight      float32
-}
+type CheckboxListConfig = theme.CheckboxListStyle
 
 // CheckboxList é um componente de lista com checkboxes (versão genérica)
 type CheckboxList[T any] struct {
@@ -34,24 +26,20 @@ type CheckboxList[T any] struct {
 	ScrollOffset int
 	VisibleStart int
 	VisibleEnd   int
-	// Campos para navegação e foco
-	FocusedIndex int  // Índice do item em foco (-1 se nenhum)
-	HasFocus     bool // Se o checkbox list tem foco global
-	// Campo para viewport dinâmico
-	CurrentViewportHeight float32
+	FocusedIndex int
+	HasFocus     bool
+	Height       float32
 }
 
-// NewCheckboxList cria uma nova lista com checkboxes
-func NewCheckboxList[T any](id string, items []CheckboxListItem[T], config CheckboxListConfig) *CheckboxList[T] {
+// NewCheckboxList cria uma nova lista usando o design system
+func NewCheckboxList[T any](id string, items []CheckboxListItem[T]) *CheckboxList[T] {
 	return &CheckboxList[T]{
 		ID:           id,
 		Items:        items,
-		Config:       config,
+		Config:       theme.GetCheckboxListStyle(),
 		ScrollOffset: 0,
-		VisibleStart: 0,
-		VisibleEnd:   0,
-		FocusedIndex: -1,    // Nenhum item em foco inicialmente
-		HasFocus:     false, // Sem foco inicialmente
+		FocusedIndex: -1, // Nenhum item em foco inicialmente
+		HasFocus:     false,
 	}
 }
 
@@ -101,9 +89,9 @@ func (cl *CheckboxList[T]) ScrollDown() {
 
 // GetMaxVisibleItems calcula itens visíveis dinamicamente baseado no viewport atual
 func (cl *CheckboxList[T]) GetMaxVisibleItems() int {
-	if cl.CurrentViewportHeight > 0 && cl.Config.ItemHeight > 0 {
+	if cl.Height > 0 && cl.Config.ItemHeight > 0 {
 		totalPadding := float32(cl.Config.Padding.Top + cl.Config.Padding.Bottom)
-		availableHeight := cl.CurrentViewportHeight - totalPadding
+		availableHeight := cl.Height - totalPadding
 		return int(availableHeight / cl.Config.ItemHeight)
 	}
 	return 10 // Fallback padrão quando viewport não está definido
@@ -164,7 +152,7 @@ func (cl *CheckboxList[T]) MoveFocusDown() bool {
 
 	if cl.FocusedIndex < len(cl.Items)-1 {
 		cl.FocusedIndex++
-		// Calcular itens máximos usando método dinâmico
+		// Calculate max items using dynamic method
 		maxVisibleItems := cl.GetMaxVisibleItems()
 		if maxVisibleItems == 0 {
 			maxVisibleItems = 10 // Fallback para evitar divisão por zero
@@ -187,16 +175,16 @@ func (cl *CheckboxList[T]) ToggleFocusedItem() {
 	cl.ToggleItem(cl.FocusedIndex)
 }
 
-// calculateViewportMetrics calcula as métricas do viewport para scroll virtual
-func (cl *CheckboxList[T]) calculateViewportMetrics(parentHeight float32) (maxVisibleItems int, actualVisibleStart int, actualVisibleEnd int) {
+// calculateHeight calcula as métricas do viewport para scroll virtual
+func (cl *CheckboxList[T]) calculateHeight(parentHeight float32) (maxVisibleItems int, actualVisibleStart int, actualVisibleEnd int) {
 	// Armazenar altura do viewport para uso em navegação
-	cl.CurrentViewportHeight = parentHeight
+	cl.Height = parentHeight
 
-	// Calcular altura disponível para itens (descontando padding do CheckboxList)
+	// Calculate available height for items (excluding CheckboxList padding)
 	totalPadding := float32(cl.Config.Padding.Top + cl.Config.Padding.Bottom)
 	availableHeight := parentHeight - totalPadding
 
-	// Calcular quantos itens cabem no viewport disponível
+	// Calculate how many items fit in the available viewport
 	maxVisibleItems = max(int(availableHeight/cl.Config.ItemHeight), 1)
 
 	if len(cl.Items) <= maxVisibleItems {
@@ -256,21 +244,21 @@ func (cl *CheckboxList[T]) adjustScrollToAvoidEmptySpace(maxVisibleItems, actual
 // getItemBackgroundColor determina a cor de fundo de um item baseado no seu estado
 func (cl *CheckboxList[T]) getItemBackgroundColor(index int) clay.Color {
 	if cl.HasFocus && cl.FocusedIndex == index {
-		return clay.Color{R: 60, G: 120, B: 200, A: 255} // Azul para item focado
+		return cl.Config.ItemFocusedBg
 	} else if cl.Items[index].Selected {
-		return clay.Color{R: 40, G: 120, B: 80, A: 255} // Verde para item selecionado
+		return cl.Config.ItemSelectedBg
 	}
-	return clay.Color{R: 0, G: 0, B: 0, A: 0} // Transparente para item normal
+	return cl.Config.ItemNormalBg
 }
 
 // getLabelColor determina a cor do texto do label baseado no estado do item
 func (cl *CheckboxList[T]) getLabelColor(index int) clay.Color {
 	if cl.HasFocus && cl.FocusedIndex == index {
-		return clay.Color{R: 255, G: 255, B: 255, A: 255} // Branco para item focado
+		return cl.Config.ItemFocusedText
 	} else if cl.Items[index].Selected {
-		return clay.Color{R: 180, G: 255, B: 200, A: 255} // Verde claro para item selecionado
+		return cl.Config.ItemSelectedText
 	}
-	return clay.Color{R: 220, G: 230, B: 245, A: 255} // Cinza claro para item normal
+	return cl.Config.ItemNormalText
 }
 
 // renderCheckbox renderiza o checkbox de um item
@@ -278,9 +266,9 @@ func (cl *CheckboxList[T]) renderCheckbox(itemIndex int) {
 	item := cl.Items[itemIndex]
 	checkboxID := fmt.Sprintf("%s-checkbox-%d", cl.ID, itemIndex)
 
-	checkboxColor := clay.Color{R: 60, G: 70, B: 85, A: 255} // Cinza escuro moderno
+	checkboxColor := cl.Config.CheckboxNormal
 	if item.Selected {
-		checkboxColor = clay.Color{R: 30, G: 180, B: 120, A: 255} // Verde moderno vibrante
+		checkboxColor = cl.Config.CheckboxSelected
 	}
 
 	clay.UI()(clay.ElementDeclaration{
@@ -300,8 +288,8 @@ func (cl *CheckboxList[T]) renderCheckbox(itemIndex int) {
 	}, func() {
 		if item.Selected {
 			clay.Text("◣", &clay.TextElementConfig{
-				FontSize:  16,
-				TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255}, // Branco puro
+				FontSize:  14,
+				TextColor: cl.Config.CheckboxMark,
 			})
 		}
 	})
@@ -316,10 +304,6 @@ func (cl *CheckboxList[T]) renderLabel(itemIndex int) {
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(labelContainerID),
 		Layout: clay.LayoutConfig{
-			Sizing: clay.Sizing{
-				Width:  clay.SizingPercent(1.0),
-				Height: clay.SizingPercent(1.0),
-			},
 			LayoutDirection: clay.TOP_TO_BOTTOM,
 			ChildAlignment: clay.ChildAlignment{
 				Y: clay.ALIGN_Y_CENTER,
@@ -366,15 +350,15 @@ func (cl *CheckboxList[T]) updateVisiblePositions() {
 
 // Render renderiza uma lista com viewport dinâmico baseado na altura do container pai
 func (cl *CheckboxList[T]) Render(height float32) {
-	_, actualVisibleStart, actualVisibleEnd := cl.calculateViewportMetrics(height)
+	_, actualVisibleStart, actualVisibleEnd := cl.calculateHeight(height)
 
-	// Container principal da lista usando toda altura disponível do pai (viewport)
+	// Container principal da lista
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(cl.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
 				Width: clay.SizingPercent(1.0),
-				// Height: clay.SizingPercent(1.0),
+				// Height: clay.SizingPercent(0.9),
 			},
 			Padding:         cl.Config.Padding,
 			ChildGap:        cl.Config.ChildGap,
@@ -429,28 +413,4 @@ func (cl *CheckboxList[T]) HandleInput(inputType input.InputType) bool {
 	default:
 		return false
 	}
-}
-
-// DefaultCheckboxListConfig retorna configuração para viewport dinâmico
-func DefaultCheckboxListConfig() CheckboxListConfig {
-	return CheckboxListConfig{
-		Sizing: clay.Sizing{
-			Width: clay.SizingPercent(1.0),
-		},
-		Padding:         clay.PaddingAll(10),
-		ChildGap:        5,
-		BackgroundColor: clay.Color{R: 25, G: 30, B: 40, A: 240},
-		ScrollOffset:    0,
-		CheckboxSize:    25,
-		ItemHeight:      45,
-	}
-}
-
-// ViewportCheckboxListConfig configuração otimizada para viewport dinâmico
-func ViewportCheckboxListConfig() CheckboxListConfig {
-	config := DefaultCheckboxListConfig()
-	config.ItemHeight = 40   // Itens um pouco menores para mais itens visíveis
-	config.CheckboxSize = 22 // Checkbox proporcionalmente menor
-	config.ChildGap = 3      // Gap menor para aproveitar melhor o espaço
-	return config
 }

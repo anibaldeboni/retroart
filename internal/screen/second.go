@@ -4,6 +4,7 @@ import (
 	"log"
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/theme"
 	"retroart-sdl2/internal/ui"
 	"retroart-sdl2/internal/ui/widgets"
 
@@ -28,15 +29,15 @@ func NewSecond() *Second {
 
 func (ss *Second) initializeWidgets() {
 	ss.buttons = []*widgets.Button{
-		widgets.NewButton("back-btn", "Back", widgets.PrimaryButtonConfig(), func() {
+		widgets.NewButtonWithStyle("back-btn", "Back", theme.StylePrimary, func() {
 			if ss.navigator != nil {
 				ss.navigator.GoBack()
 			}
 		}),
-		widgets.NewButton("options-btn", "Options", widgets.SecondaryButtonConfig(), func() {
+		widgets.NewButtonWithStyle("options-btn", "Options", theme.StyleSecondary, func() {
 			// Ação para opções (pode ser implementada futuramente)
 		}),
-		widgets.NewButton("exit-btn", "Exit", widgets.DangerButtonConfig(), func() {
+		widgets.NewButtonWithStyle("exit-btn", "Exit", theme.StyleDanger, func() {
 			// Ação para sair
 		}),
 	}
@@ -56,6 +57,12 @@ func (ss *Second) Update() {
 }
 
 func (ss *Second) Render() {
+	mainStyle := theme.GetMainContainerStyle()
+	contentStyle := theme.GetContentContainerStyle()
+	colors := theme.GetColors()
+	spacing := theme.GetSpacing()
+	typography := theme.GetTypography()
+
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
 		Layout: clay.LayoutConfig{
@@ -63,15 +70,15 @@ func (ss *Second) Render() {
 				Width:  clay.SizingGrow(core.WINDOW_WIDTH),
 				Height: clay.SizingGrow(core.WINDOW_HEIGHT),
 			},
-			Padding:         clay.PaddingAll(20),
-			ChildGap:        30,
+			Padding:         clay.Padding{Left: spacing.LG, Right: spacing.LG, Top: spacing.LG, Bottom: spacing.LG},
+			ChildGap:        spacing.XL,
 			LayoutDirection: clay.TOP_TO_BOTTOM,
 			ChildAlignment: clay.ChildAlignment{
 				X: clay.ALIGN_X_CENTER,
 				Y: clay.ALIGN_Y_CENTER,
 			},
 		},
-		BackgroundColor: clay.Color{R: 40, G: 42, B: 54, A: 255},
+		BackgroundColor: mainStyle.BackgroundColor,
 	}, func() {
 		// Container para conteúdo principal
 		clay.UI()(clay.ElementDeclaration{
@@ -81,15 +88,15 @@ func (ss *Second) Render() {
 					Width:  clay.SizingPercent(0.8),
 					Height: clay.SizingFit(0, 0),
 				},
-				Padding:         clay.PaddingAll(30),
-				ChildGap:        20,
+				Padding:         contentStyle.Padding,
+				ChildGap:        spacing.LG,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 				ChildAlignment: clay.ChildAlignment{
 					X: clay.ALIGN_X_CENTER,
 				},
 			},
-			CornerRadius:    clay.CornerRadiusAll(12),
-			BackgroundColor: clay.Color{R: 60, G: 63, B: 75, A: 180},
+			CornerRadius:    clay.CornerRadiusAll(contentStyle.CornerRadius),
+			BackgroundColor: contentStyle.BackgroundColor,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{
@@ -101,8 +108,8 @@ func (ss *Second) Render() {
 				},
 			}, func() {
 				clay.Text("Second screen", &clay.TextElementConfig{
-					FontSize:  28,
-					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
+					FontSize:  typography.XLarge,
+					TextColor: colors.TextPrimary,
 				})
 			})
 
@@ -110,7 +117,7 @@ func (ss *Second) Render() {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("text-content"),
 				Layout: clay.LayoutConfig{
-					ChildGap:        15,
+					ChildGap:        spacing.MD,
 					LayoutDirection: clay.TOP_TO_BOTTOM,
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
@@ -118,23 +125,23 @@ func (ss *Second) Render() {
 				},
 			}, func() {
 				clay.Text("This is the second application screen.", &clay.TextElementConfig{
-					FontSize:  18,
-					TextColor: clay.Color{R: 230, G: 230, B: 230, A: 255},
+					FontSize:  typography.Large,
+					TextColor: colors.TextSecondary,
 				})
 
 				clay.Text("Here you can add any desired content.", &clay.TextElementConfig{
-					FontSize:  16,
-					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+					FontSize:  typography.Base,
+					TextColor: colors.TextMuted,
 				})
 
 				clay.Text("This structure allows for easy expansion.", &clay.TextElementConfig{
-					FontSize:  16,
-					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+					FontSize:  typography.Base,
+					TextColor: colors.TextMuted,
 				})
 
 				clay.Text("Clay allows for flexible and responsive layouts.", &clay.TextElementConfig{
-					FontSize:  16,
-					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+					FontSize:  typography.Base,
+					TextColor: colors.TextMuted,
 				})
 			})
 
@@ -142,8 +149,8 @@ func (ss *Second) Render() {
 			clay.UI()(clay.ElementDeclaration{
 				Id: clay.ID("buttons-container"),
 				Layout: clay.LayoutConfig{
-					Padding:         clay.PaddingAll(10),
-					ChildGap:        15,
+					Padding:         clay.Padding{Left: spacing.SM, Right: spacing.SM, Top: spacing.SM, Bottom: spacing.SM},
+					ChildGap:        spacing.MD,
 					LayoutDirection: clay.LEFT_TO_RIGHT,
 					ChildAlignment: clay.ChildAlignment{
 						X: clay.ALIGN_X_CENTER,
@@ -183,8 +190,8 @@ func (ss *Second) Render() {
 				}
 
 				clay.Text(focusInfo, &clay.TextElementConfig{
-					FontSize:  12,
-					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+					FontSize:  typography.XSmall,
+					TextColor: colors.TextMuted,
 				})
 			})
 		})
