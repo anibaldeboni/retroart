@@ -23,6 +23,7 @@ type Layout struct {
 	clayArena        clay.Arena
 	arenaResetOffset uint64
 	fontCache        map[uint16]*ttf.Font
+	spatialNav       *SpatialNavigation
 }
 
 var (
@@ -39,10 +40,11 @@ func GetLayout() *Layout {
 func NewLayout(renderer *sdl.Renderer) *Layout {
 	once.Do(func() {
 		instance = &Layout{
-			renderer:  renderer,
-			enabled:   false,
-			isActive:  false,
-			fontCache: make(map[uint16]*ttf.Font),
+			renderer:   renderer,
+			enabled:    false,
+			isActive:   false,
+			fontCache:  make(map[uint16]*ttf.Font),
+			spatialNav: NewSpatialNavigation(),
 		}
 
 		// Inicializar Clay e FontSystem
@@ -309,6 +311,12 @@ func (l *Layout) EndLayout() clay.RenderCommandArray {
 
 	commands := clay.EndLayout()
 	log.Printf("clay.EndLayout() completed, got %d commands", commands.Length)
+
+	// Atualizar navegação espacial com os comandos de renderização
+	if l.spatialNav != nil {
+		l.spatialNav.UpdateLayout(commands)
+	}
+
 	return commands
 }
 
@@ -377,4 +385,31 @@ func (l *Layout) RenderClayCommands(commands clay.RenderCommandArray) error {
 	}
 
 	return nil
+}
+
+// GetSpatialNavigation retorna o sistema de navegação espacial
+func (l *Layout) GetSpatialNavigation() *SpatialNavigation {
+	return l.spatialNav
+}
+
+// RegisterFocusable registra um widget focável no sistema de navegação espacial
+func (l *Layout) RegisterFocusable(widget Focusable) {
+	if l.spatialNav != nil {
+		l.spatialNav.RegisterFocusable(widget)
+	}
+}
+
+// UnregisterFocusable remove um widget focável do sistema de navegação espacial
+func (l *Layout) UnregisterFocusable(id string) {
+	if l.spatialNav != nil {
+		l.spatialNav.UnregisterFocusable(id)
+	}
+}
+
+// HandleSpatialInput processa input de navegação espacial
+func (l *Layout) HandleSpatialInput(direction InputDirection) bool {
+	if l.spatialNav != nil {
+		return l.spatialNav.HandleInput(direction)
+	}
+	return false
 }

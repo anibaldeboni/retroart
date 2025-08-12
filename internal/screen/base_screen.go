@@ -4,49 +4,49 @@ import (
 	"retroart-sdl2/internal/ui"
 )
 
-// BaseScreen fornece funcionalidade básica de foco para todas as telas
+// BaseScreen fornece funcionalidade básica de navegação espacial para todas as telas
 type BaseScreen struct {
-	focusManager *ui.FocusManager
-	screenID     string
+	spatialManager *ui.SpatialNavigationManager
+	screenID       string
 }
 
 // NewBaseScreen cria uma nova tela base
 func NewBaseScreen(screenID string) *BaseScreen {
 	return &BaseScreen{
-		focusManager: ui.NewFocusManager(),
-		screenID:     screenID,
+		spatialManager: ui.NewSpatialNavigationManager(),
+		screenID:       screenID,
 	}
 }
 
-// GetFocusManager retorna o gerenciador de foco da tela
-func (bs *BaseScreen) GetFocusManager() *ui.FocusManager {
-	return bs.focusManager
+// GetSpatialManager retorna o gerenciador de navegação espacial da tela
+func (bs *BaseScreen) GetSpatialManager() *ui.SpatialNavigationManager {
+	return bs.spatialManager
 }
 
-// AddFocusGroup adiciona um grupo de foco à tela
-func (bs *BaseScreen) AddFocusGroup(group *ui.FocusGroup) {
-	bs.focusManager.AddGroup(group)
+// RegisterWidget registra um widget focável na tela
+func (bs *BaseScreen) RegisterWidget(widget ui.Focusable) {
+	bs.spatialManager.RegisterWidget(widget)
 }
 
-// HandleInput processa entrada direcionais, delegando para o focus manager
+// HandleInput processa entrada direcional, delegando para o spatial manager
 func (bs *BaseScreen) HandleInput(direction ui.InputDirection) bool {
-	return bs.focusManager.HandleInput(direction)
+	return bs.spatialManager.HandleInput(direction)
 }
 
-// GetCurrentGroup retorna o grupo atualmente ativo
-func (bs *BaseScreen) GetCurrentGroup() *ui.FocusGroup {
-	return bs.focusManager.GetCurrentGroup()
+// GetCurrentWidget retorna o widget atualmente focado
+func (bs *BaseScreen) GetCurrentWidget() ui.Focusable {
+	return bs.spatialManager.GetCurrentWidget()
 }
 
-// GetCurrentFocusable retorna o widget atualmente focado
-func (bs *BaseScreen) GetCurrentFocusable() ui.Focusable {
-	return bs.focusManager.GetCurrentFocusable()
+// GetCurrentFocus retorna o ID do widget atualmente focado
+func (bs *BaseScreen) GetCurrentFocus() string {
+	return bs.spatialManager.GetCurrentFocus()
 }
 
-// FocusableScreen interface que define o contrato para telas que usam sistema de foco
-type FocusableScreen interface {
-	// InitializeFocus configura os grupos de foco iniciais da tela
-	InitializeFocus()
+// SpatialScreen interface que define o contrato para telas que usam navegação espacial
+type SpatialScreen interface {
+	// InitializeWidgets configura os widgets focáveis iniciais da tela
+	InitializeWidgets()
 
 	// HandleInput processa entrada direcional
 	HandleInput(direction ui.InputDirection) bool
@@ -54,6 +54,6 @@ type FocusableScreen interface {
 	// Render renderiza a tela
 	Render()
 
-	// GetFocusManager retorna o gerenciador de foco
-	GetFocusManager() *ui.FocusManager
+	// GetSpatialManager retorna o gerenciador de navegação espacial
+	GetSpatialManager() *ui.SpatialNavigationManager
 }

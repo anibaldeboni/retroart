@@ -11,14 +11,10 @@ import (
 	"retroart-sdl2/internal/ui"
 )
 
-// Home é a versão refatorada da Home que usa o sistema de foco unificado
+// Home é a versão refatorada da Home que usa o sistema de navegação espacial
 type Home struct {
 	*BaseScreen
 	screenMgr *Manager
-
-	// Grupos focáveis
-	buttonGroup *ui.FocusGroup
-	listGroup   *ui.FocusGroup
 
 	// Widgets focáveis
 	buttons      []*ui.Button
@@ -80,23 +76,17 @@ func (h *Home) initializeWidgets() {
 	h.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
 }
 
-// InitializeFocus configura os grupos de foco
+// InitializeFocus configura os widgets no sistema de navegação espacial
 func (h *Home) InitializeFocus() {
-	// Criar grupo do checkbox list (primeiro, será o grupo ativo inicial)
-	h.listGroup = ui.NewFocusGroup("checkbox-list")
-	h.listGroup.AddFocusable(h.checkboxList)
+	// Registrar checkbox list
+	h.RegisterWidget(h.checkboxList)
 
-	// Criar grupo de botões
-	h.buttonGroup = ui.NewFocusGroup("buttons")
+	// Registrar todos os botões
 	for _, button := range h.buttons {
-		h.buttonGroup.AddFocusable(button)
+		h.RegisterWidget(button)
 	}
 
-	// Adicionar grupos ao gerenciador de foco (ordem importa para foco inicial)
-	h.AddFocusGroup(h.listGroup)
-	h.AddFocusGroup(h.buttonGroup)
-
-	log.Println("Focus system initialized for HomeV2")
+	log.Println("Spatial navigation system initialized for Home")
 }
 
 // Implementação da interface Screen
@@ -216,19 +206,20 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				currentGroup := h.GetCurrentGroup()
-				if currentGroup != nil {
-					currentFocusable := h.GetCurrentFocusable()
-					focusInfo := "Grupo: " + currentGroup.ID
-					if currentFocusable != nil {
-						focusInfo += " | Widget: " + currentFocusable.GetID()
-					}
-
-					clay.Text(focusInfo, &clay.TextElementConfig{
-						FontSize:  12,
-						TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
-					})
+				currentFocus := h.GetCurrentFocus()
+				currentWidget := h.GetCurrentWidget()
+				focusInfo := "Navegação Espacial"
+				if currentFocus != "" {
+					focusInfo += " | Foco: " + currentFocus
 				}
+				if currentWidget != nil {
+					focusInfo += " | Widget: " + currentWidget.GetID()
+				}
+
+				clay.Text(focusInfo, &clay.TextElementConfig{
+					FontSize:  12,
+					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+				})
 			})
 		})
 	})

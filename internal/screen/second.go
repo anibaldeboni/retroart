@@ -11,12 +11,7 @@ import (
 type Second struct {
 	*BaseScreen
 	screenMgr *Manager
-
-	// Widgets focáveis
-	buttons []*ui.Button
-
-	// Grupos de foco
-	buttonGroup *ui.FocusGroup
+	buttons   []*ui.Button
 }
 
 func NewSecond(screenMgr *Manager) *Second {
@@ -47,14 +42,10 @@ func (ss *Second) initializeWidgets() {
 }
 
 func (ss *Second) InitializeFocus() {
-	// Criar grupo de botões
-	ss.buttonGroup = ui.NewFocusGroup("second-buttons")
+	// Registrar todos os botões no sistema de navegação espacial
 	for _, btn := range ss.buttons {
-		ss.buttonGroup.AddFocusable(btn)
+		ss.RegisterWidget(btn)
 	}
-
-	// Adicionar grupos ao gerenciador de foco
-	ss.AddFocusGroup(ss.buttonGroup)
 }
 
 func (ss *Second) Update() {
@@ -172,19 +163,20 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				currentGroup := ss.GetCurrentGroup()
-				if currentGroup != nil {
-					currentFocusable := ss.GetCurrentFocusable()
-					focusInfo := "Grupo: " + currentGroup.ID
-					if currentFocusable != nil {
-						focusInfo += " | Widget: " + currentFocusable.GetID()
-					}
-
-					clay.Text(focusInfo, &clay.TextElementConfig{
-						FontSize:  12,
-						TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
-					})
+				currentFocus := ss.GetCurrentFocus()
+				currentWidget := ss.GetCurrentWidget()
+				focusInfo := "Navegação Espacial"
+				if currentFocus != "" {
+					focusInfo += " | Foco: " + currentFocus
 				}
+				if currentWidget != nil {
+					focusInfo += " | Widget: " + currentWidget.GetID()
+				}
+
+				clay.Text(focusInfo, &clay.TextElementConfig{
+					FontSize:  12,
+					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
+				})
 			})
 		})
 	})
