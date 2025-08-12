@@ -10,14 +10,12 @@ import (
 )
 
 type Second struct {
-	*BaseScreen
 	navigator Navigator // Use Navigator interface instead of concrete Manager
 	buttons   []*ui.Button
 }
 
 func NewSecond() *Second {
 	screen := &Second{
-		BaseScreen: NewBaseScreen("second-screen"),
 		// navigator will be set in OnEnter
 	}
 
@@ -46,8 +44,11 @@ func (ss *Second) initializeWidgets() {
 
 func (ss *Second) InitializeFocus() {
 	// Registrar todos os botões no sistema de navegação espacial
-	for _, btn := range ss.buttons {
-		ss.RegisterWidget(btn)
+	layout := ui.GetLayout()
+	if layout != nil {
+		for _, btn := range ss.buttons {
+			layout.RegisterFocusable(btn)
+		}
 	}
 }
 
@@ -166,8 +167,15 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				currentFocus := ss.GetCurrentFocus()
-				currentWidget := ss.GetCurrentWidget()
+				layout := ui.GetLayout()
+				var currentFocus string
+				var currentWidget ui.Focusable
+
+				if layout != nil && layout.GetSpatialNavigation() != nil {
+					currentFocus = layout.GetSpatialNavigation().GetCurrentFocus()
+					currentWidget = layout.GetSpatialNavigation().GetCurrentWidget()
+				}
+
 				focusInfo := "Navegação Espacial"
 				if currentFocus != "" {
 					focusInfo += " | Foco: " + currentFocus
@@ -196,8 +204,11 @@ func (ss *Second) HandleInput(inputType input.InputType) {
 		}
 		return
 	default:
-		// Delegar para o BaseScreen que processa todos os outros inputs
-		handled = ss.BaseScreen.HandleInput(inputType)
+		// Delegar diretamente para o Layout
+		layout := ui.GetLayout()
+		if layout != nil {
+			handled = layout.HandleSpatialInput(inputType)
+		}
 	}
 
 	// Log apenas se não foi processado

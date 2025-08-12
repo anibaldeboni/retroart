@@ -86,27 +86,8 @@ func (app *App) handleEvents(inputCh <-chan input.InputEvent) {
 	select {
 	case inputEvent := <-inputCh:
 		if inputEvent.Pressed {
-			var keycode sdl.Keycode
-			switch inputEvent.Type {
-			case input.InputUp:
-				keycode = sdl.K_UP
-			case input.InputDown:
-				keycode = sdl.K_DOWN
-			case input.InputLeft:
-				keycode = sdl.K_LEFT
-			case input.InputRight:
-				keycode = sdl.K_RIGHT
-			case input.InputConfirm:
-				keycode = sdl.K_RETURN
-			case input.InputBack:
-				keycode = sdl.K_ESCAPE
-			case input.InputMenu:
-				keycode = sdl.K_SPACE
-			default:
-				return
-			}
-
-			app.screenMgr.HandleInput(keycode)
+			// Passar diretamente o InputType sem conversão desnecessária
+			app.screenMgr.HandleInput(inputEvent.Type)
 		}
 	default:
 	}

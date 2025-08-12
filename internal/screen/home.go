@@ -11,9 +11,8 @@ import (
 	"retroart-sdl2/internal/ui"
 )
 
-// Home é a versão refatorada da Home que usa o sistema de navegação espacial
+// Home é a tela principal da aplicação
 type Home struct {
-	*BaseScreen
 	navigator Navigator // Use Navigator interface instead of concrete Manager
 
 	// Widgets focáveis
@@ -23,7 +22,6 @@ type Home struct {
 
 func NewHome() *Home {
 	home := &Home{
-		BaseScreen: NewBaseScreen("home"),
 		// navigator will be set in OnEnter
 	}
 
@@ -80,12 +78,15 @@ func (h *Home) initializeWidgets() {
 
 // InitializeFocus configura os widgets no sistema de navegação espacial
 func (h *Home) InitializeFocus() {
-	// Registrar checkbox list
-	h.RegisterWidget(h.checkboxList)
+	// Registrar checkbox list diretamente no Layout
+	layout := ui.GetLayout()
+	if layout != nil {
+		layout.RegisterFocusable(h.checkboxList)
 
-	// Registrar todos os botões
-	for _, button := range h.buttons {
-		h.RegisterWidget(button)
+		// Registrar todos os botões
+		for _, button := range h.buttons {
+			layout.RegisterFocusable(button)
+		}
 	}
 
 	log.Println("Spatial navigation system initialized for Home")
@@ -208,8 +209,15 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				currentFocus := h.GetCurrentFocus()
-				currentWidget := h.GetCurrentWidget()
+				layout := ui.GetLayout()
+				var currentFocus string
+				var currentWidget ui.Focusable
+
+				if layout != nil && layout.GetSpatialNavigation() != nil {
+					currentFocus = layout.GetSpatialNavigation().GetCurrentFocus()
+					currentWidget = layout.GetSpatialNavigation().GetCurrentWidget()
+				}
+
 				focusInfo := "Navegação Espacial"
 				if currentFocus != "" {
 					focusInfo += " | Foco: " + currentFocus
@@ -236,10 +244,13 @@ func (h *Home) HandleInput(inputType input.InputType) {
 		}
 		return
 	default:
-		// Delegar diretamente para o BaseScreen
-		processed := h.BaseScreen.HandleInput(inputType)
-		if processed {
-			log.Printf("Input processed by focus system: %v", inputType)
+		// Delegar diretamente para o Layout
+		layout := ui.GetLayout()
+		if layout != nil {
+			processed := layout.HandleSpatialInput(inputType)
+			if processed {
+				log.Printf("Input processed by focus system: %v", inputType)
+			}
 		}
 	}
 }

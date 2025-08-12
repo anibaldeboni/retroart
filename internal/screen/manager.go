@@ -3,8 +3,6 @@ package screen
 import (
 	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
-
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 // Navigator interface para navegação entre telas
@@ -100,27 +98,9 @@ func (sm *Manager) Render() {
 	}
 }
 
-func (sm *Manager) HandleInput(keycode sdl.Keycode) {
+func (sm *Manager) HandleInput(inputType input.InputType) {
 	if sm.currentScreen == nil {
 		return
-	}
-
-	var inputType input.InputType
-	switch keycode {
-	case sdl.K_UP:
-		inputType = input.InputUp
-	case sdl.K_DOWN:
-		inputType = input.InputDown
-	case sdl.K_LEFT:
-		inputType = input.InputLeft
-	case sdl.K_RIGHT:
-		inputType = input.InputRight
-	case sdl.K_RETURN, sdl.K_SPACE:
-		inputType = input.InputConfirm
-	case sdl.K_ESCAPE:
-		inputType = input.InputBack
-	default:
-		return // Tecla não mapeada
 	}
 
 	sm.currentScreen.HandleInput(inputType)
