@@ -28,22 +28,21 @@ func NewSecond() *Second {
 func (ss *Second) initializeWidgets() {
 	// Criar botões focáveis
 	ss.buttons = []*ui.Button{
-		ui.NewButton("back-btn", "Voltar", ui.PrimaryButtonConfig(), func() {
+		ui.NewButton("back-btn", "Back", ui.PrimaryButtonConfig(), func() {
 			if ss.navigator != nil {
 				ss.navigator.GoBack()
 			}
 		}),
-		ui.NewButton("options-btn", "Opções", ui.SecondaryButtonConfig(), func() {
+		ui.NewButton("options-btn", "Options", ui.SecondaryButtonConfig(), func() {
 			// Ação para opções (pode ser implementada futuramente)
 		}),
-		ui.NewButton("exit-btn", "Sair", ui.DangerButtonConfig(), func() {
+		ui.NewButton("exit-btn", "Exit", ui.DangerButtonConfig(), func() {
 			// Ação para sair
 		}),
 	}
 }
 
 func (ss *Second) InitializeFocus() {
-	// Registrar todos os botões no sistema de navegação espacial
 	layout := ui.GetLayout()
 	if layout != nil {
 		for _, btn := range ss.buttons {
@@ -101,7 +100,7 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Segunda Tela", &clay.TextElementConfig{
+				clay.Text("Second screen", &clay.TextElementConfig{
 					FontSize:  28,
 					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 				})
@@ -118,22 +117,22 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Esta é a segunda tela da aplicação.", &clay.TextElementConfig{
+				clay.Text("This is the second application screen.", &clay.TextElementConfig{
 					FontSize:  18,
 					TextColor: clay.Color{R: 230, G: 230, B: 230, A: 255},
 				})
 
-				clay.Text("Aqui você pode adicionar qualquer conteúdo desejado.", &clay.TextElementConfig{
+				clay.Text("Here you can add any desired content.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
 
-				clay.Text("Esta estrutura permite fácil expansão.", &clay.TextElementConfig{
+				clay.Text("This structure allows for easy expansion.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
 
-				clay.Text("O Clay permite layouts flexíveis e responsivos.", &clay.TextElementConfig{
+				clay.Text("Clay allows for flexible and responsive layouts.", &clay.TextElementConfig{
 					FontSize:  16,
 					TextColor: clay.Color{R: 200, G: 200, B: 200, A: 255},
 				})
@@ -151,7 +150,6 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				// Renderizar todos os botões focáveis
 				for _, button := range ss.buttons {
 					button.Render()
 				}
@@ -176,9 +174,9 @@ func (ss *Second) Render() {
 					currentWidget = layout.GetSpatialNavigation().GetCurrentWidget()
 				}
 
-				focusInfo := "Navegação Espacial"
+				focusInfo := "Spatial Navigation"
 				if currentFocus != "" {
-					focusInfo += " | Foco: " + currentFocus
+					focusInfo += " | Focus: " + currentFocus
 				}
 				if currentWidget != nil {
 					focusInfo += " | Widget: " + currentWidget.GetID()
@@ -194,8 +192,7 @@ func (ss *Second) Render() {
 }
 
 func (ss *Second) HandleInput(inputType input.InputType) {
-	// Processar diretamente sem conversão
-	handled := false
+	var handled bool
 
 	switch inputType {
 	case input.InputBack:
@@ -204,14 +201,12 @@ func (ss *Second) HandleInput(inputType input.InputType) {
 		}
 		return
 	default:
-		// Delegar diretamente para o Layout
 		layout := ui.GetLayout()
 		if layout != nil {
 			handled = layout.HandleSpatialInput(inputType)
 		}
 	}
 
-	// Log apenas se não foi processado
 	if !handled {
 		log.Printf("Second: Input %d not handled", inputType)
 	}

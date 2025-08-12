@@ -11,24 +11,16 @@ import (
 	"retroart-sdl2/internal/ui"
 )
 
-// Home é a tela principal da aplicação
 type Home struct {
-	navigator Navigator // Use Navigator interface instead of concrete Manager
-
-	// Widgets focáveis
+	navigator    Navigator // Use Navigator interface instead of concrete Manager
 	buttons      []*ui.Button
 	checkboxList *ui.CheckboxList[string]
 }
 
 func NewHome() *Home {
-	home := &Home{
-		// navigator will be set in OnEnter
-	}
+	home := &Home{}
 
-	// Inicializar widgets focáveis
 	home.initializeWidgets()
-
-	// Configurar sistema de foco
 	home.InitializeFocus()
 
 	return home
@@ -38,16 +30,16 @@ func NewHome() *Home {
 func (h *Home) initializeWidgets() {
 	// Criar botões focáveis
 	h.buttons = []*ui.Button{
-		ui.NewButton("next-button", "Próxima Tela", ui.PrimaryButtonConfig(), func() {
+		ui.NewButton("next-button", "Second screen", ui.PrimaryButtonConfig(), func() {
 			if h.navigator != nil {
 				h.navigator.NavigateTo("second")
 			}
 		}),
-		ui.NewButton("exit-button", "Sair", ui.DangerButtonConfig(), func() {
+		ui.NewButton("exit-button", "Exit", ui.DangerButtonConfig(), func() {
 			log.Println("Exit button pressed")
 			os.Exit(0)
 		}),
-		ui.NewButton("test-selected-button", "Mostrar Selecionados", ui.SecondaryButtonConfig(), func() {
+		ui.NewButton("test-selected-button", "Show Selected", ui.SecondaryButtonConfig(), func() {
 			selectedItems := h.checkboxList.GetSelectedItems()
 			log.Printf("Selected games: %v", selectedItems)
 		}),
@@ -55,22 +47,22 @@ func (h *Home) initializeWidgets() {
 
 	// Criar dados de teste para o checkbox list
 	testItems := []ui.CheckboxListItem[string]{
-		{Label: "Jogo de Ação Super Aventura", Value: "game1", Selected: false},
-		{Label: "RPG Épico", Value: "game2", Selected: true},
-		{Label: "Plataforma Retrô", Value: "game3", Selected: false},
-		{Label: "Corrida de Velocidade", Value: "game4", Selected: false},
-		{Label: "Puzzle Inteligente", Value: "game5", Selected: true},
-		{Label: "Tiro em Primeira Pessoa", Value: "game6", Selected: false},
-		{Label: "Estratégia em Tempo Real", Value: "game7", Selected: false},
-		{Label: "Simulador de Vida", Value: "game8", Selected: false},
-		{Label: "Aventura Point-and-Click", Value: "game9", Selected: false},
-		{Label: "Luta Arcade Clássica", Value: "game10", Selected: true},
-		{Label: "Música e Ritmo", Value: "game11", Selected: false},
-		{Label: "Terror Psicológico", Value: "game12", Selected: false},
-		{Label: "Alex Kidd in the miracle world", Value: "game13", Selected: false},
-		{Label: "Street Fighter", Value: "game14", Selected: true},
-		{Label: "Need for speed", Value: "game15", Selected: false},
-		{Label: "BLACK", Value: "game16", Selected: false},
+		{Label: "Arcade", Value: "game1", Selected: false},
+		{Label: "Gameboy", Value: "game2", Selected: true},
+		{Label: "Gameboy color", Value: "game3", Selected: false},
+		{Label: "Gameboy Advance", Value: "game4", Selected: false},
+		{Label: "Nintendo Entertainment System", Value: "game5", Selected: true},
+		{Label: "Super Nintendo", Value: "game6", Selected: false},
+		{Label: "Master System", Value: "game7", Selected: false},
+		{Label: "Mega Drive", Value: "game8", Selected: false},
+		{Label: "Nintendo 64", Value: "game9", Selected: false},
+		{Label: "Sega Saturn", Value: "game10", Selected: true},
+		{Label: "Atari 2600", Value: "game11", Selected: false},
+		{Label: "Game & Watch", Value: "game12", Selected: false},
+		{Label: "CPS II", Value: "game13", Selected: false},
+		{Label: "NeoGeo", Value: "game14", Selected: true},
+		{Label: "GameGear", Value: "game15", Selected: false},
+		{Label: "PlayStation", Value: "game16", Selected: false},
 	}
 
 	h.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
@@ -78,12 +70,10 @@ func (h *Home) initializeWidgets() {
 
 // InitializeFocus configura os widgets no sistema de navegação espacial
 func (h *Home) InitializeFocus() {
-	// Registrar checkbox list diretamente no Layout
 	layout := ui.GetLayout()
 	if layout != nil {
 		layout.RegisterFocusable(h.checkboxList)
 
-		// Registrar todos os botões
 		for _, button := range h.buttons {
 			layout.RegisterFocusable(button)
 		}
@@ -100,7 +90,6 @@ func (h *Home) Update() {
 
 // Render - interface Screen (wrapper para o método Clay)
 func (h *Home) Render() {
-	// Layout principal horizontal
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
 		Layout: clay.LayoutConfig{
@@ -138,7 +127,7 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Lista de Jogos", &clay.TextElementConfig{
+				clay.Text("Games list", &clay.TextElementConfig{
 					FontSize:  20,
 					TextColor: clay.Color{R: 255, G: 255, B: 255, A: 255},
 				})
@@ -218,9 +207,9 @@ func (h *Home) Render() {
 					currentWidget = layout.GetSpatialNavigation().GetCurrentWidget()
 				}
 
-				focusInfo := "Navegação Espacial"
+				focusInfo := "Spatial Navigation"
 				if currentFocus != "" {
-					focusInfo += " | Foco: " + currentFocus
+					focusInfo += " | Focus: " + currentFocus
 				}
 				if currentWidget != nil {
 					focusInfo += " | Widget: " + currentWidget.GetID()
@@ -244,7 +233,6 @@ func (h *Home) HandleInput(inputType input.InputType) {
 		}
 		return
 	default:
-		// Delegar diretamente para o Layout
 		layout := ui.GetLayout()
 		if layout != nil {
 			processed := layout.HandleSpatialInput(inputType)
