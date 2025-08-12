@@ -25,11 +25,11 @@ func New() *App {
 
 func (app *App) Init() error {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_JOYSTICK | sdl.INIT_GAMECONTROLLER); err != nil {
-		return fmt.Errorf("erro ao inicializar SDL: %v", err)
+		return fmt.Errorf("error initializing SDL: %v", err)
 	}
 
 	if err := ttf.Init(); err != nil {
-		return fmt.Errorf("erro ao inicializar TTF: %v", err)
+		return fmt.Errorf("error initializing TTF: %v", err)
 	}
 
 	window, err := sdl.CreateWindow(
@@ -41,13 +41,13 @@ func (app *App) Init() error {
 		sdl.WINDOW_SHOWN,
 	)
 	if err != nil {
-		return fmt.Errorf("erro ao criar janela: %v", err)
+		return fmt.Errorf("error creating window: %v", err)
 	}
 	app.window = window
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC)
 	if err != nil {
-		return fmt.Errorf("erro ao criar renderer: %v", err)
+		return fmt.Errorf("error creating renderer: %v", err)
 	}
 	app.renderer = renderer
 	layout := ui.NewLayout(renderer)
@@ -139,8 +139,4 @@ func (app *App) Cleanup() {
 	}
 	ttf.Quit()
 	sdl.Quit()
-}
-
-func (app *App) SetRunning(running bool) {
-	app.running = running
 }
