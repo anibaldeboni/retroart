@@ -9,12 +9,13 @@ import (
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
+	"retroart-sdl2/internal/ui/widgets"
 )
 
 type Home struct {
 	navigator    Navigator // Use Navigator interface instead of concrete Manager
-	buttons      []*ui.Button
-	checkboxList *ui.CheckboxList[string]
+	buttons      []*widgets.Button
+	checkboxList *widgets.CheckboxList[string]
 }
 
 func NewHome() *Home {
@@ -29,24 +30,24 @@ func NewHome() *Home {
 // initializeWidgets cria todos os widgets focáveis
 func (h *Home) initializeWidgets() {
 	// Criar botões focáveis
-	h.buttons = []*ui.Button{
-		ui.NewButton("next-button", "Second screen", ui.PrimaryButtonConfig(), func() {
+	h.buttons = []*widgets.Button{
+		widgets.NewButton("next-button", "Second screen", widgets.PrimaryButtonConfig(), func() {
 			if h.navigator != nil {
 				h.navigator.NavigateTo("second")
 			}
 		}),
-		ui.NewButton("exit-button", "Exit", ui.DangerButtonConfig(), func() {
+		widgets.NewButton("exit-button", "Exit", widgets.DangerButtonConfig(), func() {
 			log.Println("Exit button pressed")
 			os.Exit(0)
 		}),
-		ui.NewButton("test-selected-button", "Show Selected", ui.SecondaryButtonConfig(), func() {
+		widgets.NewButton("test-selected-button", "Show Selected", widgets.SecondaryButtonConfig(), func() {
 			selectedItems := h.checkboxList.GetSelectedItems()
 			log.Printf("Selected games: %v", selectedItems)
 		}),
 	}
 
 	// Criar dados de teste para o checkbox list
-	testItems := []ui.CheckboxListItem[string]{
+	testItems := []widgets.CheckboxListItem[string]{
 		{Label: "Arcade", Value: "game1", Selected: false},
 		{Label: "Gameboy", Value: "game2", Selected: true},
 		{Label: "Gameboy color", Value: "game3", Selected: false},
@@ -65,7 +66,7 @@ func (h *Home) initializeWidgets() {
 		{Label: "PlayStation", Value: "game16", Selected: false},
 	}
 
-	h.checkboxList = ui.NewCheckboxList("consoles-checkbox-list", testItems, ui.DefaultCheckboxListConfig())
+	h.checkboxList = widgets.NewCheckboxList("consoles-checkbox-list", testItems, widgets.DefaultCheckboxListConfig())
 }
 
 // InitializeFocus configura os widgets no sistema de navegação espacial

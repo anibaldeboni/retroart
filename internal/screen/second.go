@@ -5,13 +5,14 @@ import (
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
+	"retroart-sdl2/internal/ui/widgets"
 
 	"github.com/TotallyGamerJet/clay"
 )
 
 type Second struct {
 	navigator Navigator // Use Navigator interface instead of concrete Manager
-	buttons   []*ui.Button
+	buttons   []*widgets.Button
 }
 
 func NewSecond() *Second {
@@ -26,17 +27,16 @@ func NewSecond() *Second {
 }
 
 func (ss *Second) initializeWidgets() {
-	// Criar botões focáveis
-	ss.buttons = []*ui.Button{
-		ui.NewButton("back-btn", "Back", ui.PrimaryButtonConfig(), func() {
+	ss.buttons = []*widgets.Button{
+		widgets.NewButton("back-btn", "Back", widgets.PrimaryButtonConfig(), func() {
 			if ss.navigator != nil {
 				ss.navigator.GoBack()
 			}
 		}),
-		ui.NewButton("options-btn", "Options", ui.SecondaryButtonConfig(), func() {
+		widgets.NewButton("options-btn", "Options", widgets.SecondaryButtonConfig(), func() {
 			// Ação para opções (pode ser implementada futuramente)
 		}),
-		ui.NewButton("exit-btn", "Exit", ui.DangerButtonConfig(), func() {
+		widgets.NewButton("exit-btn", "Exit", widgets.DangerButtonConfig(), func() {
 			// Ação para sair
 		}),
 	}
