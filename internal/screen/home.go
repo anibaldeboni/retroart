@@ -30,18 +30,17 @@ func NewHome() *Home {
 
 // initializeWidgets cria todos os widgets focáveis
 func (h *Home) initializeWidgets() {
-	// Criar botões focáveis usando design system
 	h.buttons = []*widgets.Button{
-		widgets.NewButtonWithStyle("next-button", "Second screen", theme.StylePrimary, func() {
+		widgets.NewButton("next-button", "Second screen", theme.StylePrimary, func() {
 			if h.navigator != nil {
 				h.navigator.NavigateTo("second")
 			}
 		}),
-		widgets.NewButtonWithStyle("exit-button", "Exit", theme.StyleDanger, func() {
+		widgets.NewButton("exit-button", "Exit", theme.StyleDanger, func() {
 			log.Println("Exit button pressed")
 			os.Exit(0)
 		}),
-		widgets.NewButtonWithStyle("test-selected-button", "Show Selected", theme.StyleSecondary, func() {
+		widgets.NewButton("test-selected-button", "Show Selected", theme.StyleSecondary, func() {
 			selectedItems := h.checkboxList.GetSelectedItems()
 			log.Printf("Selected games: %v", selectedItems)
 		}),
@@ -92,8 +91,8 @@ func (h *Home) Update() {
 
 // Render - interface Screen (wrapper para o método Clay)
 func (h *Home) Render() {
-	mainStyle := theme.GetMainContainerStyle()
-	contentStyle := theme.GetContentContainerStyle()
+	mainContainerStyle := theme.GetMainContainerStyle()
+	containerStyle := theme.GetContentContainerStyle()
 	colors := theme.GetColors()
 	spacing := theme.GetSpacing()
 	typography := theme.GetTypography()
@@ -109,7 +108,7 @@ func (h *Home) Render() {
 			ChildGap:        spacing.MD,
 			LayoutDirection: clay.LEFT_TO_RIGHT,
 		},
-		BackgroundColor: mainStyle.BackgroundColor,
+		BackgroundColor: mainContainerStyle.BackgroundColor,
 	}, func() {
 		// Container para lista de checkboxes (lado esquerdo)
 		clay.UI()(clay.ElementDeclaration{
@@ -119,12 +118,12 @@ func (h *Home) Render() {
 					Width:  clay.SizingPercent(0.35),
 					Height: clay.SizingPercent(1.0),
 				},
-				Padding:         contentStyle.Padding,
+				Padding:         containerStyle.Padding,
 				ChildGap:        spacing.SM,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 			},
-			CornerRadius:    clay.CornerRadiusAll(contentStyle.CornerRadius),
-			BackgroundColor: contentStyle.BackgroundColor,
+			CornerRadius:    clay.CornerRadiusAll(containerStyle.CornerRadius),
+			BackgroundColor: containerStyle.BackgroundColor,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{
@@ -141,7 +140,6 @@ func (h *Home) Render() {
 				})
 			})
 
-			// Renderizar checkbox list focável
 			h.checkboxList.Render(core.WINDOW_HEIGHT - 220)
 		})
 
@@ -153,15 +151,15 @@ func (h *Home) Render() {
 					Width:  clay.SizingPercent(0.65),
 					Height: clay.SizingPercent(1.0),
 				},
-				Padding:         contentStyle.Padding,
+				Padding:         containerStyle.Padding,
 				ChildGap:        spacing.MD,
 				LayoutDirection: clay.TOP_TO_BOTTOM,
 				ChildAlignment: clay.ChildAlignment{
 					X: clay.ALIGN_X_CENTER,
 				},
 			},
-			CornerRadius:    clay.CornerRadiusAll(contentStyle.CornerRadius),
-			BackgroundColor: contentStyle.BackgroundColor,
+			CornerRadius:    clay.CornerRadiusAll(containerStyle.CornerRadius),
+			BackgroundColor: containerStyle.BackgroundColor,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{

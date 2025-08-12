@@ -29,15 +29,15 @@ func NewSecond() *Second {
 
 func (ss *Second) initializeWidgets() {
 	ss.buttons = []*widgets.Button{
-		widgets.NewButtonWithStyle("back-btn", "Back", theme.StylePrimary, func() {
+		widgets.NewButton("back-btn", "Back", theme.StylePrimary, func() {
 			if ss.navigator != nil {
 				ss.navigator.GoBack()
 			}
 		}),
-		widgets.NewButtonWithStyle("options-btn", "Options", theme.StyleSecondary, func() {
+		widgets.NewButton("options-btn", "Options", theme.StyleSecondary, func() {
 			// Ação para opções (pode ser implementada futuramente)
 		}),
-		widgets.NewButtonWithStyle("exit-btn", "Exit", theme.StyleDanger, func() {
+		widgets.NewButton("exit-btn", "Exit", theme.StyleDanger, func() {
 			// Ação para sair
 		}),
 	}

@@ -23,48 +23,15 @@ type ButtonConfig = theme.ButtonStyle
 // ButtonState define a aparência de um estado específico do botão
 type ButtonState = theme.ButtonState
 
-// DefaultButtonConfig retorna uma configuração padrão para botões com estado
-func DefaultButtonConfig() ButtonConfig {
-	return theme.GetButtonStyle(theme.StylePrimary)
-}
-
-// CreateButtonConfig cria uma configuração personalizada para botão com estado
-func CreateButtonConfig(normalBg, focusedBg, normalText, focusedText clay.Color) ButtonConfig {
-	config := DefaultButtonConfig()
-	config.Normal.BackgroundColor = normalBg
-	config.Normal.TextColor = normalText
-	config.Focused.BackgroundColor = focusedBg
-	config.Focused.TextColor = focusedText
-	return config
-}
-
-// Configurações predefinidas para diferentes tipos de botões
-func PrimaryButtonConfig() ButtonConfig {
-	return theme.GetButtonStyle(theme.StylePrimary)
-}
-
-func DangerButtonConfig() ButtonConfig {
-	return theme.GetButtonStyle(theme.StyleDanger)
-}
-
-func SecondaryButtonConfig() ButtonConfig {
-	return theme.GetButtonStyle(theme.StyleSecondary)
-}
-
-// NewButton cria um novo botão focável
-func NewButton(id, label string, config ButtonConfig, onClick func()) *Button {
+// NewButton cria um novo botão usando o design system
+func NewButton(id, label string, styleType theme.ComponentStyleType, onClick func()) *Button {
 	return &Button{
 		ID:      id,
 		Label:   label,
-		Config:  config,
+		Config:  theme.GetButtonStyle(styleType),
 		OnClick: onClick,
 		enabled: true,
 	}
-}
-
-// NewButtonWithStyle cria um novo botão usando o design system
-func NewButtonWithStyle(id, label string, styleType theme.ComponentStyleType, onClick func()) *Button {
-	return NewButton(id, label, theme.GetButtonStyle(styleType), onClick)
 }
 
 // Interface Focusable implementation
