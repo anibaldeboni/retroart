@@ -14,17 +14,17 @@ import (
 // Home é a versão refatorada da Home que usa o sistema de navegação espacial
 type Home struct {
 	*BaseScreen
-	screenMgr *Manager
+	navigator Navigator // Use Navigator interface instead of concrete Manager
 
 	// Widgets focáveis
 	buttons      []*ui.Button
 	checkboxList *ui.CheckboxList[string]
 }
 
-func NewHome(screenMgr *Manager) *Home {
+func NewHome() *Home {
 	home := &Home{
 		BaseScreen: NewBaseScreen("home"),
-		screenMgr:  screenMgr,
+		// navigator will be set in OnEnter
 	}
 
 	// Inicializar widgets focáveis
@@ -41,7 +41,9 @@ func (h *Home) initializeWidgets() {
 	// Criar botões focáveis
 	h.buttons = []*ui.Button{
 		ui.NewButton("next-button", "Próxima Tela", ui.PrimaryButtonConfig(), func() {
-			h.screenMgr.SetCurrentScreen("second")
+			if h.navigator != nil {
+				h.navigator.NavigateTo("second")
+			}
 		}),
 		ui.NewButton("exit-button", "Sair", ui.DangerButtonConfig(), func() {
 			log.Println("Exit button pressed")
@@ -229,7 +231,9 @@ func (h *Home) Render() {
 func (h *Home) HandleInput(inputType input.InputType) {
 	switch inputType {
 	case input.InputBack:
-		h.screenMgr.SetCurrentScreen("home") // voltar ou ação específica
+		if h.navigator != nil {
+			h.navigator.GoBack() // Use Navigator's GoBack functionality
+		}
 		return
 	default:
 		// Delegar diretamente para o BaseScreen
@@ -241,7 +245,8 @@ func (h *Home) HandleInput(inputType input.InputType) {
 }
 
 // OnEnter - chamado quando a tela se torna ativa
-func (h *Home) OnEnter() {
+func (h *Home) OnEnter(navigator Navigator) {
+	h.navigator = navigator // Store navigator reference
 	log.Println("HomeV2 screen entered")
 }
 

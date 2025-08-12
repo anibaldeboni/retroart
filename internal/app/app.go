@@ -24,17 +24,14 @@ func New() *App {
 }
 
 func (app *App) Init() error {
-	// Inicializar SDL
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_JOYSTICK | sdl.INIT_GAMECONTROLLER); err != nil {
 		return fmt.Errorf("erro ao inicializar SDL: %v", err)
 	}
 
-	// Inicializar TTF
 	if err := ttf.Init(); err != nil {
 		return fmt.Errorf("erro ao inicializar TTF: %v", err)
 	}
 
-	// Criar janela
 	window, err := sdl.CreateWindow(
 		"RetroArt",
 		sdl.WINDOWPOS_CENTERED,
@@ -48,7 +45,6 @@ func (app *App) Init() error {
 	}
 	app.window = window
 
-	// Criar renderer
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED|sdl.RENDERER_PRESENTVSYNC)
 	if err != nil {
 		return fmt.Errorf("erro ao criar renderer: %v", err)
@@ -56,11 +52,10 @@ func (app *App) Init() error {
 	app.renderer = renderer
 	layout := ui.NewLayout(renderer)
 
-	// Inicializar gerenciador de telas
-	app.screenMgr = screen.NewManager(layout) // Usar sistema de cache de fontes
+	app.screenMgr = screen.NewManager(layout)
 
-	app.screenMgr.AddScreen("home", screen.NewHome(app.screenMgr))     // Usar sistema de cache
-	app.screenMgr.AddScreen("second", screen.NewSecond(app.screenMgr)) // Usar sistema de cache
+	app.screenMgr.AddScreen("home", screen.NewHome())
+	app.screenMgr.AddScreen("second", screen.NewSecond())
 
 	app.screenMgr.SetCurrentScreen("home")
 
@@ -129,14 +124,9 @@ func (app *App) update() {
 }
 
 func (app *App) render() {
-	// Limpar tela
 	app.renderer.SetDrawColor(0, 0, 0, 255)
 	app.renderer.Clear()
-
-	// Renderizar tela atual
 	app.screenMgr.Render()
-
-	// Apresentar frame
 	app.renderer.Present()
 }
 

@@ -11,14 +11,14 @@ import (
 
 type Second struct {
 	*BaseScreen
-	screenMgr *Manager
+	navigator Navigator // Use Navigator interface instead of concrete Manager
 	buttons   []*ui.Button
 }
 
-func NewSecond(screenMgr *Manager) *Second {
+func NewSecond() *Second {
 	screen := &Second{
 		BaseScreen: NewBaseScreen("second-screen"),
-		screenMgr:  screenMgr,
+		// navigator will be set in OnEnter
 	}
 
 	screen.initializeWidgets()
@@ -31,7 +31,9 @@ func (ss *Second) initializeWidgets() {
 	// Criar botões focáveis
 	ss.buttons = []*ui.Button{
 		ui.NewButton("back-btn", "Voltar", ui.PrimaryButtonConfig(), func() {
-			ss.screenMgr.SetCurrentScreen("home")
+			if ss.navigator != nil {
+				ss.navigator.GoBack()
+			}
 		}),
 		ui.NewButton("options-btn", "Opções", ui.SecondaryButtonConfig(), func() {
 			// Ação para opções (pode ser implementada futuramente)
@@ -189,7 +191,9 @@ func (ss *Second) HandleInput(inputType input.InputType) {
 
 	switch inputType {
 	case input.InputBack:
-		ss.screenMgr.SetCurrentScreen("home")
+		if ss.navigator != nil {
+			ss.navigator.GoBack()
+		}
 		return
 	default:
 		// Delegar para o BaseScreen que processa todos os outros inputs
@@ -202,7 +206,8 @@ func (ss *Second) HandleInput(inputType input.InputType) {
 	}
 }
 
-func (ss *Second) OnEnter() {
+func (ss *Second) OnEnter(navigator Navigator) {
+	ss.navigator = navigator // Store navigator reference
 	log.Println("Entering Second screen")
 }
 
