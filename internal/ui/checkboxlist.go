@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"retroart-sdl2/internal/input"
 
 	"github.com/TotallyGamerJet/clay"
 )
@@ -412,17 +413,17 @@ func (cl *CheckboxList[T]) CanFocus() bool {
 	return len(cl.Items) > 0
 }
 
-func (cl *CheckboxList[T]) HandleInput(direction InputDirection) bool {
+func (cl *CheckboxList[T]) HandleInput(inputType input.InputType) bool {
 	if !cl.HasFocus {
 		return false
 	}
 
-	switch direction {
-	case DirectionUp:
+	switch inputType {
+	case input.InputUp:
 		return cl.MoveFocusUp()
-	case DirectionDown:
+	case input.InputDown:
 		return cl.MoveFocusDown()
-	case DirectionConfirm:
+	case input.InputConfirm:
 		cl.ToggleFocusedItem()
 		return true
 	default:

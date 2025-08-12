@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log"
+	"retroart-sdl2/internal/input"
 
 	"github.com/TotallyGamerJet/clay"
 )
@@ -119,8 +120,8 @@ func (b *Button) CanFocus() bool {
 	return b.enabled
 }
 
-func (b *Button) HandleInput(direction InputDirection) bool {
-	if direction == DirectionConfirm && b.OnClick != nil {
+func (b *Button) HandleInput(inputType input.InputType) bool {
+	if inputType == input.InputConfirm && b.OnClick != nil {
 		b.OnClick()
 		return true
 	}

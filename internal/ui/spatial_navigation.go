@@ -3,6 +3,7 @@ package ui
 import (
 	"log"
 	"math"
+	"retroart-sdl2/internal/input"
 
 	"github.com/TotallyGamerJet/clay"
 )
@@ -133,7 +134,7 @@ func (sn *SpatialNavigation) extractElementID(cmd *clay.RenderCommand) string {
 }
 
 // HandleInput processa input de navegação espacial usando Chain of Responsibility pattern
-func (sn *SpatialNavigation) HandleInput(direction InputDirection) bool {
+func (sn *SpatialNavigation) HandleInput(inputType input.InputType) bool {
 	if !sn.enabled || len(sn.elements) == 0 {
 		return false
 	}
@@ -147,24 +148,24 @@ func (sn *SpatialNavigation) HandleInput(direction InputDirection) bool {
 	// Chain of Responsibility: dar ao widget focado a primeira chance de processar o input
 	if currentElement.Widget != nil {
 		// Se o widget consome o input, processo termina aqui
-		if consumed := currentElement.Widget.HandleInput(direction); consumed {
-			log.Printf("SpatialNavigation: Input %d consumed by widget '%s'", direction, currentElement.ID)
+		if consumed := currentElement.Widget.HandleInput(inputType); consumed {
+			log.Printf("SpatialNavigation: Input %d consumed by widget '%s'", inputType, currentElement.ID)
 			return true
 		}
-		log.Printf("SpatialNavigation: Input %d not consumed by widget '%s', falling back to spatial navigation", direction, currentElement.ID)
+		log.Printf("SpatialNavigation: Input %d not consumed by widget '%s', falling back to spatial navigation", inputType, currentElement.ID)
 	}
 
 	// Fallback: se widget não consumiu input, usar navegação espacial
-	switch direction {
-	case DirectionUp:
+	switch inputType {
+	case input.InputUp:
 		return sn.navigateInDirection(currentElement, 0, -1)
-	case DirectionDown:
+	case input.InputDown:
 		return sn.navigateInDirection(currentElement, 0, 1)
-	case DirectionLeft:
+	case input.InputLeft:
 		return sn.navigateInDirection(currentElement, -1, 0)
-	case DirectionRight:
+	case input.InputRight:
 		return sn.navigateInDirection(currentElement, 1, 0)
-	case DirectionConfirm, DirectionBack:
+	case input.InputConfirm, input.InputBack:
 		// Para Confirm e Back, se chegou até aqui é porque widget não processou
 		// Não há fallback espacial para estes, então retorna false
 		return false

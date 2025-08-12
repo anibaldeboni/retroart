@@ -60,7 +60,7 @@ func (p *InputProcessor) SendEvent(inputType InputType) {
 }
 
 // ProcessDirectionalInput processa input direcional com throttling
-func (p *InputProcessor) ProcessDirectionalInput(key interface{}, inputType InputType, isPressed bool) {
+func (p *InputProcessor) ProcessDirectionalInput(key any, inputType InputType, isPressed bool) {
 	if !isPressed {
 		return
 	}

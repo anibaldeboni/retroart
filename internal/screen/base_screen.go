@@ -1,6 +1,7 @@
 package screen
 
 import (
+	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
 )
 
@@ -29,8 +30,8 @@ func (bs *BaseScreen) RegisterWidget(widget ui.Focusable) {
 }
 
 // HandleInput processa entrada direcional, delegando para o spatial manager
-func (bs *BaseScreen) HandleInput(direction ui.InputDirection) bool {
-	return bs.spatialManager.HandleInput(direction)
+func (bs *BaseScreen) HandleInput(inputType input.InputType) bool {
+	return bs.spatialManager.HandleInput(inputType)
 }
 
 // GetCurrentWidget retorna o widget atualmente focado
@@ -49,7 +50,7 @@ type SpatialScreen interface {
 	InitializeWidgets()
 
 	// HandleInput processa entrada direcional
-	HandleInput(direction ui.InputDirection) bool
+	HandleInput(inputType input.InputType) bool
 
 	// Render renderiza a tela
 	Render()

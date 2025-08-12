@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/TotallyGamerJet/clay"
-	"github.com/veandco/go-sdl2/sdl"
 
 	"retroart-sdl2/internal/core"
+	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
 )
 
@@ -225,30 +225,18 @@ func (h *Home) Render() {
 	})
 }
 
-// HandleInput - compatibilidade com screen.InputType
-func (h *Home) HandleInput(input InputType) {
-	var direction ui.InputDirection
-	switch input {
-	case InputUp:
-		direction = ui.DirectionUp
-	case InputDown:
-		direction = ui.DirectionDown
-	case InputLeft:
-		direction = ui.DirectionLeft
-	case InputRight:
-		direction = ui.DirectionRight
-	case InputConfirm:
-		direction = ui.DirectionConfirm
-	case InputBack:
+// HandleInput - refatorado para usar input.InputType diretamente
+func (h *Home) HandleInput(inputType input.InputType) {
+	switch inputType {
+	case input.InputBack:
 		h.screenMgr.SetCurrentScreen("home") // voltar ou ação específica
 		return
 	default:
-		return
-	}
-
-	processed := h.BaseScreen.HandleInput(direction)
-	if processed {
-		log.Printf("Input processed by focus system: %v", input)
+		// Delegar diretamente para o BaseScreen
+		processed := h.BaseScreen.HandleInput(inputType)
+		if processed {
+			log.Printf("Input processed by focus system: %v", inputType)
+		}
 	}
 }
 
@@ -260,37 +248,4 @@ func (h *Home) OnEnter() {
 // OnExit - chamado quando a tela sai de foco
 func (h *Home) OnExit() {
 	log.Println("HomeV2 screen exited")
-}
-
-// HandleKeyDown processa teclas pressionadas (método para uso direto)
-func (h *Home) HandleKeyDown(key sdl.Scancode) {
-	var direction ui.InputDirection
-	handled := false
-
-	switch key {
-	case sdl.SCANCODE_UP:
-		direction = ui.DirectionUp
-		handled = true
-	case sdl.SCANCODE_DOWN:
-		direction = ui.DirectionDown
-		handled = true
-	case sdl.SCANCODE_LEFT:
-		direction = ui.DirectionLeft
-		handled = true
-	case sdl.SCANCODE_RIGHT:
-		direction = ui.DirectionRight
-		handled = true
-	case sdl.SCANCODE_RETURN, sdl.SCANCODE_SPACE:
-		direction = ui.DirectionConfirm
-		handled = true
-	}
-
-	if handled {
-		processed := h.BaseScreen.HandleInput(direction)
-		if processed {
-			log.Printf("Input processed: %v", direction)
-		} else {
-			log.Printf("Input not processed: %v", direction)
-		}
-	}
 }

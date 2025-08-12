@@ -3,6 +3,7 @@ package screen
 import (
 	"log"
 	"retroart-sdl2/internal/core"
+	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
 
 	"github.com/TotallyGamerJet/clay"
@@ -182,34 +183,22 @@ func (ss *Second) Render() {
 	})
 }
 
-func (ss *Second) HandleInput(input InputType) {
-	// Mapear InputType para InputDirection
-	var direction ui.InputDirection
+func (ss *Second) HandleInput(inputType input.InputType) {
+	// Processar diretamente sem conversão
 	handled := false
 
-	switch input {
-	case InputUp:
-		direction = ui.DirectionUp
-		handled = true
-	case InputDown:
-		direction = ui.DirectionDown
-		handled = true
-	case InputLeft:
-		direction = ui.DirectionLeft
-		handled = true
-	case InputRight:
-		direction = ui.DirectionRight
-		handled = true
-	case InputConfirm:
-		direction = ui.DirectionConfirm
-		handled = true
-	case InputBack:
+	switch inputType {
+	case input.InputBack:
 		ss.screenMgr.SetCurrentScreen("home")
 		return
+	default:
+		// Delegar para o BaseScreen que processa todos os outros inputs
+		handled = ss.BaseScreen.HandleInput(inputType)
 	}
 
-	if handled {
-		ss.BaseScreen.HandleInput(direction)
+	// Log apenas se não foi processado
+	if !handled {
+		log.Printf("Second: Input %d not handled", inputType)
 	}
 }
 

@@ -1,28 +1,17 @@
 package screen
 
 import (
+	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/ui"
 
 	"github.com/veandco/go-sdl2/sdl"
-)
-
-// Tipos de input suportados
-type InputType int
-
-const (
-	InputUp InputType = iota
-	InputDown
-	InputLeft
-	InputRight
-	InputConfirm
-	InputBack
 )
 
 // Interface para telas
 type Screen interface {
 	Update()
 	Render()
-	HandleInput(input InputType)
+	HandleInput(inputType input.InputType)
 	OnEnter()
 	OnExit()
 }
@@ -80,23 +69,23 @@ func (sm *Manager) HandleInput(keycode sdl.Keycode) {
 		return
 	}
 
-	var input InputType
+	var inputType input.InputType
 	switch keycode {
 	case sdl.K_UP:
-		input = InputUp
+		inputType = input.InputUp
 	case sdl.K_DOWN:
-		input = InputDown
+		inputType = input.InputDown
 	case sdl.K_LEFT:
-		input = InputLeft
+		inputType = input.InputLeft
 	case sdl.K_RIGHT:
-		input = InputRight
+		inputType = input.InputRight
 	case sdl.K_RETURN, sdl.K_SPACE:
-		input = InputConfirm
+		inputType = input.InputConfirm
 	case sdl.K_ESCAPE:
-		input = InputBack
+		inputType = input.InputBack
 	default:
 		return // Tecla não mapeada
 	}
 
-	sm.currentScreen.HandleInput(input)
+	sm.currentScreen.HandleInput(inputType)
 }

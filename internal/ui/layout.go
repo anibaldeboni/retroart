@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"retroart-sdl2/internal/input"
 	"sync"
 	"unsafe"
 
@@ -407,9 +408,9 @@ func (l *Layout) UnregisterFocusable(id string) {
 }
 
 // HandleSpatialInput processa input de navegação espacial
-func (l *Layout) HandleSpatialInput(direction InputDirection) bool {
+func (l *Layout) HandleSpatialInput(inputType input.InputType) bool {
 	if l.spatialNav != nil {
-		return l.spatialNav.HandleInput(direction)
+		return l.spatialNav.HandleInput(inputType)
 	}
 	return false
 }

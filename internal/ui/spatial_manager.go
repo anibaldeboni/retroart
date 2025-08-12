@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log"
+	"retroart-sdl2/internal/input"
 )
 
 // SpatialNavigationManager gerencia a navegação espacial integrada com o Layout
@@ -44,13 +45,13 @@ func (snm *SpatialNavigationManager) UnregisterWidget(id string) {
 }
 
 // HandleInput processa input de navegação
-func (snm *SpatialNavigationManager) HandleInput(direction InputDirection) bool {
+func (snm *SpatialNavigationManager) HandleInput(inputType input.InputType) bool {
 	if snm.layout == nil {
 		return false
 	}
 
 	// Delegar para o sistema de navegação espacial do layout
-	return snm.layout.HandleSpatialInput(direction)
+	return snm.layout.HandleSpatialInput(inputType)
 }
 
 // GetCurrentWidget retorna o widget atualmente focado
