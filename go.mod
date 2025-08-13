@@ -9,4 +9,8 @@ require (
 	github.com/veandco/go-sdl2 v0.4.40
 )
 
-require github.com/gotranspile/cxgo v0.5.2 // indirect
+require (
+	github.com/ebitengine/purego v0.9.0-alpha.9 // indirect
+	github.com/gotranspile/cxgo v0.5.2 // indirect
+	golang.org/x/image v0.29.0 // indirect
+)

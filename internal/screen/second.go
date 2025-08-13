@@ -17,9 +17,7 @@ type Second struct {
 }
 
 func NewSecond() *Second {
-	screen := &Second{
-		// navigator will be set in OnEnter
-	}
+	screen := &Second{}
 
 	screen.initializeWidgets()
 	screen.InitializeFocus()
