@@ -287,10 +287,7 @@ func (cl *CheckboxList[T]) renderCheckbox(itemIndex int) {
 		BackgroundColor: checkboxColor,
 	}, func() {
 		if item.Selected {
-			clay.Text("◣", &clay.TextElementConfig{
-				FontSize:  14,
-				TextColor: cl.Config.CheckboxMark,
-			})
+			clay.Text("◣", theme.CreateTextConfig(14, cl.Config.CheckboxMark))
 		}
 	})
 }
@@ -310,10 +307,7 @@ func (cl *CheckboxList[T]) renderLabel(itemIndex int) {
 			},
 		},
 	}, func() {
-		clay.Text(item.Label, &clay.TextElementConfig{
-			FontSize:  14,
-			TextColor: labelColor,
-		})
+		clay.Text(item.Label, theme.CreateTextConfig(14, labelColor))
 	})
 }
 

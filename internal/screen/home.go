@@ -93,9 +93,7 @@ func (h *Home) Update() {
 func (h *Home) Render() {
 	mainContainerStyle := theme.GetMainContainerStyle()
 	containerStyle := theme.GetContentContainerStyle()
-	colors := theme.GetColors()
 	spacing := theme.GetSpacing()
-	typography := theme.GetTypography()
 
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
@@ -134,10 +132,7 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Games list", &clay.TextElementConfig{
-					FontSize:  typography.Large,
-					TextColor: colors.TextPrimary,
-				})
+				clay.Text("Games list", theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.Large, theme.DefaultDesignSystem().Colors.TextPrimary))
 			})
 
 			h.checkboxList.Render(core.WINDOW_HEIGHT - 220)
@@ -170,10 +165,7 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Controls", &clay.TextElementConfig{
-					FontSize:  typography.XLarge,
-					TextColor: colors.TextPrimary,
-				})
+				clay.Text("Controls", theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.XLarge, theme.DefaultDesignSystem().Colors.TextPrimary))
 			})
 
 			// Container para botões
@@ -221,10 +213,7 @@ func (h *Home) Render() {
 					focusInfo += " | Widget: " + currentWidget.GetID()
 				}
 
-				clay.Text(focusInfo, &clay.TextElementConfig{
-					FontSize:  typography.XSmall,
-					TextColor: colors.TextMuted,
-				})
+				clay.Text(focusInfo, theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.Small, theme.DefaultDesignSystem().Colors.TextSecondary))
 			})
 		})
 	})

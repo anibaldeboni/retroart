@@ -144,3 +144,40 @@ func DefaultDesignSystem() DesignSystem {
 		},
 	}
 }
+
+// GetFontIdForSize maps font sizes to Clay FontId indices
+// Clay expects FontId to be the index in the fonts array, not the actual size
+func GetFontIdForSize(fontSize uint16) uint16 {
+	switch fontSize {
+	case 10:
+		return 0
+	case 12:
+		return 1
+	case 14:
+		return 2
+	case 16:
+		return 3
+	case 18:
+		return 4
+	case 20:
+		return 5
+	case 24:
+		return 6
+	case 28:
+		return 7
+	case 32:
+		return 8
+	default:
+		return 3 // Default to base font (16px)
+	}
+}
+
+// CreateTextConfig creates a complete TextElementConfig with correct FontId mapping
+func CreateTextConfig(fontSize uint16, textColor clay.Color) *clay.TextElementConfig {
+	fontId := GetFontIdForSize(fontSize)
+	return &clay.TextElementConfig{
+		FontId:    fontId,
+		FontSize:  fontSize,
+		TextColor: textColor,
+	}
+}

@@ -87,10 +87,7 @@ func (b *Button) Render() {
 		BackgroundColor: currentState.BackgroundColor,
 	}, func() {
 		// Texto do botão centralizado com cor do estado atual
-		clay.Text(b.Label, &clay.TextElementConfig{
-			FontSize:  b.Config.TextSize,
-			TextColor: currentState.TextColor,
-		})
+		clay.Text(b.Label, theme.CreateTextConfig(b.Config.TextSize, currentState.TextColor))
 	})
 	log.Printf("New button created: %s", b.ID)
 }

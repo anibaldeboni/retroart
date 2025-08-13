@@ -105,10 +105,7 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Second screen", &clay.TextElementConfig{
-					FontSize:  typography.XLarge,
-					TextColor: colors.TextPrimary,
-				})
+				clay.Text("Second screen", theme.CreateTextConfig(typography.XLarge, colors.TextPrimary))
 			})
 
 			// Container para textos de conteúdo
@@ -122,25 +119,13 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("This is the second application screen.", &clay.TextElementConfig{
-					FontSize:  typography.Large,
-					TextColor: colors.TextSecondary,
-				})
+				clay.Text("This is the second application screen.", theme.CreateTextConfig(typography.Large, colors.TextSecondary))
 
-				clay.Text("Here you can add any desired content.", &clay.TextElementConfig{
-					FontSize:  typography.Base,
-					TextColor: colors.TextMuted,
-				})
+				clay.Text("Here you can add any desired content.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
 
-				clay.Text("This structure allows for easy expansion.", &clay.TextElementConfig{
-					FontSize:  typography.Base,
-					TextColor: colors.TextMuted,
-				})
+				clay.Text("This structure allows for easy expansion.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
 
-				clay.Text("Clay allows for flexible and responsive layouts.", &clay.TextElementConfig{
-					FontSize:  typography.Base,
-					TextColor: colors.TextMuted,
-				})
+				clay.Text("Clay allows for flexible and responsive layouts.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
 			})
 
 			// Container para botões
@@ -187,10 +172,7 @@ func (ss *Second) Render() {
 					focusInfo += " | Widget: " + currentWidget.GetID()
 				}
 
-				clay.Text(focusInfo, &clay.TextElementConfig{
-					FontSize:  typography.XSmall,
-					TextColor: colors.TextMuted,
-				})
+				clay.Text(focusInfo, theme.CreateTextConfig(typography.XSmall, colors.TextMuted))
 			})
 		})
 	})

@@ -50,7 +50,11 @@ func (app *App) Init() error {
 		return fmt.Errorf("error creating renderer: %v", err)
 	}
 	app.renderer = renderer
-	layout := ui.NewLayout(renderer)
+
+	layout, err := ui.NewLayout(renderer)
+	if err != nil {
+		return fmt.Errorf("error creating layout system: %v", err)
+	}
 
 	app.screenMgr = screen.NewManager(layout)
 

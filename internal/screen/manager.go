@@ -92,9 +92,9 @@ func (sm *Manager) Update() {
 
 func (sm *Manager) Render() {
 	if sm.currentScreen != nil {
-		sm.layout.BeginLayout()
-		sm.currentScreen.Render()
-		sm.layout.Render() // Renderizar o sistema ClayLayout após a tela
+		sm.layout.Render(func() {
+			sm.currentScreen.Render()
+		})
 	}
 }
 
