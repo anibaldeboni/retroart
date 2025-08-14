@@ -9,6 +9,7 @@ import (
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/screen"
+	"retroart-sdl2/internal/theme"
 	"retroart-sdl2/internal/ui"
 )
 
@@ -51,7 +52,13 @@ func (app *App) Init() error {
 	}
 	app.renderer = renderer
 
-	layout, err := ui.NewLayout(renderer)
+	// Create and initialize font system
+	fontSystem := theme.NewFontSystem()
+	if err := fontSystem.InitializeFonts(); err != nil {
+		return fmt.Errorf("error initializing font system: %v", err)
+	}
+
+	layout, err := ui.NewLayout(renderer, fontSystem)
 	if err != nil {
 		return fmt.Errorf("error creating layout system: %v", err)
 	}

@@ -1,6 +1,13 @@
 package theme
 
-import "github.com/TotallyGamerJet/clay"
+import (
+	"fmt"
+	"log"
+
+	"github.com/TotallyGamerJet/clay"
+	claysdl2 "github.com/TotallyGamerJet/clay/renderers/sdl2"
+	"github.com/veandco/go-sdl2/ttf"
+)
 
 // ColorPalette define a paleta de cores do design system
 type ColorPalette struct {
@@ -145,39 +152,167 @@ func DefaultDesignSystem() DesignSystem {
 	}
 }
 
-// GetFontIdForSize maps font sizes to Clay FontId indices
+// GetFontIdForSize maps font sizes to Clay FontId indices based on typography system
 // Clay expects FontId to be the index in the fonts array, not the actual size
 func GetFontIdForSize(fontSize uint16) uint16 {
-	switch fontSize {
-	case 10:
+	sizes := GetAllTypographySizes()
+
+	// Find exact match first
+	for i, size := range sizes {
+		if size == fontSize {
+			return uint16(i)
+		}
+	}
+
+	// If no exact match, find closest size
+	var closestIndex int
+	var minDiff uint16 = 1000
+
+	for i, size := range sizes {
+		var diff uint16
+		if size > fontSize {
+			diff = size - fontSize
+		} else {
+			diff = fontSize - size
+		}
+
+		if diff < minDiff {
+			minDiff = diff
+			closestIndex = i
+		}
+	}
+
+	// Safety check: ensure we don't return an index that could be out of bounds
+	if closestIndex >= len(sizes) {
+		log.Printf("Warning: fontId %d is out of bounds for %d available fonts, using 0", closestIndex, len(sizes))
 		return 0
-	case 12:
-		return 1
-	case 14:
-		return 2
-	case 16:
-		return 3
-	case 18:
-		return 4
-	case 20:
-		return 5
-	case 24:
-		return 6
-	case 28:
-		return 7
-	case 32:
-		return 8
-	default:
-		return 3 // Default to base font (16px)
+	}
+
+	log.Printf("Font size %d mapped to fontId %d (actual size %d)", fontSize, closestIndex, sizes[closestIndex])
+	return uint16(closestIndex)
+}
+
+// FontSystem gerencia o carregamento e cache de fontes baseado na tipografia
+type FontSystem struct {
+	fontCache map[uint16]*ttf.Font
+	clayFonts []claysdl2.Font
+}
+
+// NewFontSystem cria um novo sistema de fontes
+func NewFontSystem() *FontSystem {
+	return &FontSystem{
+		fontCache: make(map[uint16]*ttf.Font),
+		clayFonts: make([]claysdl2.Font, 0),
 	}
 }
 
-// CreateTextConfig creates a complete TextElementConfig with correct FontId mapping
-func CreateTextConfig(fontSize uint16, textColor clay.Color) *clay.TextElementConfig {
-	fontId := GetFontIdForSize(fontSize)
-	return &clay.TextElementConfig{
-		FontId:    fontId,
-		FontSize:  fontSize,
-		TextColor: textColor,
+// GetAllTypographySizes retorna todos os tamanhos de fonte definidos na tipografia
+func GetAllTypographySizes() []uint16 {
+	ds := DefaultDesignSystem()
+	return []uint16{
+		ds.Typography.XSmall,
+		ds.Typography.Small,
+		ds.Typography.Base,
+		ds.Typography.Large,
+		ds.Typography.XLarge,
 	}
+}
+
+// InitializeFonts inicializa o sistema de fontes carregando todos os tamanhos da tipografia
+func (fs *FontSystem) InitializeFonts() error {
+	// Use actual typography sizes from design system
+	typographySizes := GetAllTypographySizes()
+	typographyInts := make([]int, len(typographySizes))
+	for i, size := range typographySizes {
+		typographyInts[i] = int(size)
+	}
+
+	fs.clayFonts = make([]claysdl2.Font, len(typographyInts))
+
+	for i, size := range typographyInts {
+		font, err := fs.loadFontWithSize(size)
+		if err != nil {
+			return fmt.Errorf("failed to load font size %d: %v", size, err)
+		}
+
+		clayFont := claysdl2.Font{Font: font}
+		fs.clayFonts[i] = clayFont
+		fs.fontCache[uint16(size)] = font
+		log.Printf("Successfully loaded font size %d at index %d", size, i)
+	}
+
+	log.Printf("Font system initialized with %d fonts: %v", len(typographyInts), typographyInts)
+	return nil
+}
+
+// loadFontWithSize carrega uma fonte com tamanho específico
+func (fs *FontSystem) loadFontWithSize(size int) (*ttf.Font, error) {
+	// Lista de possíveis caminhos de fontes no sistema
+	fontPaths := []string{
+		"assets/DejaVuSansCondensed.ttf",
+		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+		"/usr/share/fonts/TTF/DejaVuSans.ttf",
+		"/System/Library/Fonts/Helvetica.ttc",
+		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+	}
+
+	for _, fontPath := range fontPaths {
+		font, err := ttf.OpenFont(fontPath, size)
+		if err == nil {
+			log.Printf("Successfully loaded font from: %s (size %d)", fontPath, size)
+			return font, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not load any font for size %d", size)
+}
+
+// GetClayFonts retorna as fontes no formato necessário para Clay
+func (fs *FontSystem) GetClayFonts() []claysdl2.Font {
+	if len(fs.clayFonts) == 0 {
+		log.Printf("Warning: GetClayFonts called but no fonts initialized")
+		return []claysdl2.Font{}
+	}
+
+	log.Printf("GetClayFonts returning %d fonts", len(fs.clayFonts))
+	return fs.clayFonts
+}
+
+// GetClayFontsPointer returns a pointer to the internal clayFonts slice for Clay's MeasureText function
+// This ensures Clay gets a stable pointer that won't be garbage collected
+func (fs *FontSystem) GetClayFontsPointer() *[]claysdl2.Font {
+	if len(fs.clayFonts) == 0 {
+		log.Printf("Warning: GetClayFontsPointer called but no fonts initialized")
+		return nil
+	}
+
+	log.Printf("GetClayFontsPointer returning pointer to %d fonts", len(fs.clayFonts))
+	return &fs.clayFonts
+}
+
+// GetFont retorna uma fonte específica do cache
+func (fs *FontSystem) GetFont(size uint16) *ttf.Font {
+	if font, exists := fs.fontCache[size]; exists {
+		return font
+	}
+
+	// Se não encontrou o tamanho exato, procurar o mais próximo
+	var closestSize uint16
+	var minDiff uint16 = 1000
+
+	for cachedSize := range fs.fontCache {
+		var diff uint16
+		if cachedSize > size {
+			diff = cachedSize - size
+		} else {
+			diff = size - cachedSize
+		}
+
+		if diff < minDiff {
+			minDiff = diff
+			closestSize = cachedSize
+		}
+	}
+
+	return fs.fontCache[closestSize]
 }

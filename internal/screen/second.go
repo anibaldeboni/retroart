@@ -57,9 +57,7 @@ func (ss *Second) Update() {
 func (ss *Second) Render() {
 	mainStyle := theme.GetMainContainerStyle()
 	contentStyle := theme.GetContentContainerStyle()
-	colors := theme.GetColors()
 	spacing := theme.GetSpacing()
-	typography := theme.GetTypography()
 
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID("main-container"),
@@ -105,7 +103,8 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Second screen", theme.CreateTextConfig(typography.XLarge, colors.TextPrimary))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextXLarge("Second screen", ds.Colors.TextPrimary)
 			})
 
 			// Container para textos de conteúdo
@@ -119,13 +118,14 @@ func (ss *Second) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("This is the second application screen.", theme.CreateTextConfig(typography.Large, colors.TextSecondary))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextLarge("This is the second application screen.", ds.Colors.TextSecondary)
 
-				clay.Text("Here you can add any desired content.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
+				widgets.TextBase("Here you can add any desired content.", ds.Colors.TextMuted)
 
-				clay.Text("This structure allows for easy expansion.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
+				widgets.TextBase("This structure allows for easy expansion.", ds.Colors.TextMuted)
 
-				clay.Text("Clay allows for flexible and responsive layouts.", theme.CreateTextConfig(typography.Base, colors.TextMuted))
+				widgets.TextBase("Clay allows for flexible and responsive layouts.", ds.Colors.TextMuted)
 			})
 
 			// Container para botões
@@ -172,7 +172,8 @@ func (ss *Second) Render() {
 					focusInfo += " | Widget: " + currentWidget.GetID()
 				}
 
-				clay.Text(focusInfo, theme.CreateTextConfig(typography.XSmall, colors.TextMuted))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextXSmall(focusInfo, ds.Colors.TextMuted)
 			})
 		})
 	})

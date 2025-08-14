@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/theme"
 	"sync"
 	"unsafe"
 
 	"github.com/TotallyGamerJet/clay"
 	claysdl2 "github.com/TotallyGamerJet/clay/renderers/sdl2"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 
 	"retroart-sdl2/internal/core"
 )
@@ -22,8 +22,7 @@ type Layout struct {
 	clayContext      *clay.Context
 	clayArena        clay.Arena
 	arenaResetOffset uint64
-	fontCache        map[uint16]*ttf.Font
-	clayFonts        []claysdl2.Font // Official renderer font format
+	fontSystem       *theme.FontSystem
 	spatialNav       *SpatialNavigation
 }
 
@@ -38,26 +37,24 @@ func GetLayout() *Layout {
 }
 
 // NewLayout cria ou retorna a instância singleton do sistema de layout Clay
-func NewLayout(renderer *sdl.Renderer) (*Layout, error) {
+func NewLayout(renderer *sdl.Renderer, fontSystem *theme.FontSystem) (*Layout, error) {
 	var initError error
 
 	once.Do(func() {
 		instance = &Layout{
 			renderer:   renderer,
-			fontCache:  make(map[uint16]*ttf.Font),
+			fontSystem: fontSystem,
 			spatialNav: NewSpatialNavigation(),
 		}
 
-		// Inicializar Clay e FontSystem
+		// Inicializar Clay com o sistema de fontes já inicializado
 		if err := instance.initializeClay(); err != nil {
 			initError = fmt.Errorf("failed to initialize Clay: %w", err)
 			return
 		}
 
-		if err := instance.initializeFontSystem(); err != nil {
-			initError = fmt.Errorf("failed to initialize font system: %w", err)
-			return
-		}
+		// Configure text measurement function after fonts are ready
+		instance.configureMeasureTextFunction()
 
 		log.Println("Layout created successfully")
 	})
@@ -103,9 +100,6 @@ func (l *Layout) initializeClay() error {
 
 	log.Printf("Current context address: %p, clay context address: %p", currentContext, l.clayContext)
 
-	// Configure text measurement function using official Clay SDL2 renderer
-	clay.SetMeasureTextFunction(claysdl2.MeasureText, unsafe.Pointer(&l.clayFonts))
-
 	// Capture arena reset offset after initialization
 	l.arenaResetOffset = l.clayArena.NextAllocation
 
@@ -113,89 +107,16 @@ func (l *Layout) initializeClay() error {
 	return nil
 }
 
-// initializeFontSystem inicializa o sistema de fontes internamente
-func (l *Layout) initializeFontSystem() error {
-	// Carregar fontes com diferentes tamanhos
-	fontSizes := []uint16{10, 12, 14, 16, 18, 20, 24, 28, 32}
-
-	// Initialize clayFonts slice for official renderer
-	l.clayFonts = make([]claysdl2.Font, 0, len(fontSizes))
-
-	for _, size := range fontSizes {
-		font, err := l.loadFontWithSize(size)
-		if err != nil {
-			log.Printf("Warning: Could not load font size %d: %v", size, err)
-			continue
-		}
-		l.fontCache[size] = font
-
-		// Add to clayFonts for official renderer (use array index as FontId)
-		l.clayFonts = append(l.clayFonts, claysdl2.Font{
-			FontId: uint32(len(l.clayFonts)),
-			Font:   font,
-		})
-
-		log.Printf("Loaded font size: %d (FontId: %d)", size, len(l.clayFonts)-1)
+// configureMeasureTextFunction configures Clay's text measurement after fonts are initialized
+func (l *Layout) configureMeasureTextFunction() {
+	clayFontsPtr := l.fontSystem.GetClayFontsPointer()
+	if clayFontsPtr == nil {
+		log.Printf("Error: Cannot configure text measurement function - no fonts available")
+		return
 	}
 
-	if len(l.fontCache) == 0 {
-		return errors.New("failed to load any fonts")
-	}
-
-	log.Printf("Font system initialized with %d font sizes", len(l.fontCache))
-	return nil
-}
-
-// loadFontWithSize carrega uma fonte com tamanho específico
-func (l *Layout) loadFontWithSize(size uint16) (*ttf.Font, error) {
-	// Lista de possíveis caminhos de fontes no sistema
-	fontPaths := []string{
-		"assets/DejaVuSansCondensed.ttf",
-		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-		"/usr/share/fonts/TTF/DejaVuSans.ttf",
-		"/System/Library/Fonts/Helvetica.ttc",
-		"/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
-	}
-
-	for _, fontPath := range fontPaths {
-		font, err := ttf.OpenFont(fontPath, int(size))
-		if err == nil {
-			log.Printf("Successfully loaded font from: %s (size %d)", fontPath, size)
-			return font, nil
-		}
-	}
-
-	return nil, fmt.Errorf("could not load any font for size %d", size)
-}
-
-// GetFontForSize retorna a fonte para um tamanho específico
-func (l *Layout) GetFontForSize(size uint16) *ttf.Font {
-	if l.fontCache == nil {
-		return nil
-	}
-
-	if font, exists := l.fontCache[size]; exists {
-		return font
-	}
-
-	var closestSize uint16
-	var minDiff uint16 = 1000
-
-	for cachedSize := range l.fontCache {
-		var diff uint16
-		if cachedSize > size {
-			diff = cachedSize - size
-		} else {
-			diff = size - cachedSize
-		}
-
-		if diff < minDiff {
-			minDiff = diff
-			closestSize = cachedSize
-		}
-	}
-
-	return l.fontCache[closestSize]
+	clay.SetMeasureTextFunction(claysdl2.MeasureText, unsafe.Pointer(clayFontsPtr))
+	log.Printf("Configured text measurement function with stable pointer to %d fonts", len(*clayFontsPtr))
 }
 
 // Render executa o ciclo completo de renderização Clay
@@ -232,13 +153,14 @@ func (l *Layout) Render(screenRenderFunc func()) {
 	commands := clay.EndLayout()
 	log.Printf("clay.EndLayout() completed, got %d commands", commands.Length)
 
-	// Atualizar navegação espacial com os comandos de renderização
+	// Atualizar navegação espacial com os commandos de renderização
 	if l.spatialNav != nil {
 		l.spatialNav.UpdateLayout(commands)
 	}
 
 	log.Printf("ClayRender called with %d commands", commands.Length)
-	err := claysdl2.ClayRender(l.renderer, commands, l.clayFonts)
+	clayFonts := l.fontSystem.GetClayFonts()
+	err := claysdl2.ClayRender(l.renderer, commands, clayFonts)
 	if err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}

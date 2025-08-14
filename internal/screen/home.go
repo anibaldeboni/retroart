@@ -132,7 +132,8 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Games list", theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.Large, theme.DefaultDesignSystem().Colors.TextPrimary))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextLarge("Games list", ds.Colors.TextPrimary)
 			})
 
 			h.checkboxList.Render(core.WINDOW_HEIGHT - 220)
@@ -165,7 +166,8 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
-				clay.Text("Controls", theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.XLarge, theme.DefaultDesignSystem().Colors.TextPrimary))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextXLarge("Controls", ds.Colors.TextPrimary)
 			})
 
 			// Container para botões
@@ -213,7 +215,8 @@ func (h *Home) Render() {
 					focusInfo += " | Widget: " + currentWidget.GetID()
 				}
 
-				clay.Text(focusInfo, theme.CreateTextConfig(theme.DefaultDesignSystem().Typography.Small, theme.DefaultDesignSystem().Colors.TextSecondary))
+				ds := theme.DefaultDesignSystem()
+				widgets.TextSmall(focusInfo, ds.Colors.TextSecondary)
 			})
 		})
 	})
