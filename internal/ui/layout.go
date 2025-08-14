@@ -54,7 +54,11 @@ func NewLayout(renderer *sdl.Renderer, fontSystem *theme.FontSystem) (*Layout, e
 		}
 
 		// Configure text measurement function after fonts are ready
-		instance.configureMeasureTextFunction()
+		err := instance.configureMeasureTextFunction()
+		if err != nil {
+			initError = fmt.Errorf("failed to configure text measurement function: %w", err)
+			return
+		}
 
 		log.Println("Layout created successfully")
 	})
@@ -108,15 +112,16 @@ func (l *Layout) initializeClay() error {
 }
 
 // configureMeasureTextFunction configures Clay's text measurement after fonts are initialized
-func (l *Layout) configureMeasureTextFunction() {
-	clayFontsPtr := l.fontSystem.GetClayFontsPointer()
+func (l *Layout) configureMeasureTextFunction() error {
+	clayFontsPtr := l.fontSystem.GetFonts()
 	if clayFontsPtr == nil {
 		log.Printf("Error: Cannot configure text measurement function - no fonts available")
-		return
+		return errors.New("no fonts available")
 	}
 
 	clay.SetMeasureTextFunction(claysdl2.MeasureText, unsafe.Pointer(clayFontsPtr))
 	log.Printf("Configured text measurement function with stable pointer to %d fonts", len(*clayFontsPtr))
+	return nil
 }
 
 // Render executa o ciclo completo de renderização Clay
@@ -159,8 +164,8 @@ func (l *Layout) Render(screenRenderFunc func()) {
 	}
 
 	log.Printf("ClayRender called with %d commands", commands.Length)
-	clayFonts := l.fontSystem.GetClayFonts()
-	err := claysdl2.ClayRender(l.renderer, commands, clayFonts)
+	clayFonts := l.fontSystem.GetFonts()
+	err := claysdl2.ClayRender(l.renderer, commands, *clayFonts)
 	if err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}

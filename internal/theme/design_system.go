@@ -192,17 +192,15 @@ func GetFontIdForSize(fontSize uint16) uint16 {
 	return uint16(closestIndex)
 }
 
-// FontSystem gerencia o carregamento e cache de fontes baseado na tipografia
+// FontSystem gerencia o carregamento de fontes baseado na tipografia
 type FontSystem struct {
-	fontCache map[uint16]*ttf.Font
-	clayFonts []claysdl2.Font
+	fonts []claysdl2.Font
 }
 
 // NewFontSystem cria um novo sistema de fontes
 func NewFontSystem() *FontSystem {
 	return &FontSystem{
-		fontCache: make(map[uint16]*ttf.Font),
-		clayFonts: make([]claysdl2.Font, 0),
+		fonts: make([]claysdl2.Font, 0),
 	}
 }
 
@@ -227,7 +225,7 @@ func (fs *FontSystem) InitializeFonts() error {
 		typographyInts[i] = int(size)
 	}
 
-	fs.clayFonts = make([]claysdl2.Font, len(typographyInts))
+	fs.fonts = make([]claysdl2.Font, len(typographyInts))
 
 	for i, size := range typographyInts {
 		font, err := fs.loadFontWithSize(size)
@@ -236,8 +234,7 @@ func (fs *FontSystem) InitializeFonts() error {
 		}
 
 		clayFont := claysdl2.Font{Font: font}
-		fs.clayFonts[i] = clayFont
-		fs.fontCache[uint16(size)] = font
+		fs.fonts[i] = clayFont
 		log.Printf("Successfully loaded font size %d at index %d", size, i)
 	}
 
@@ -267,52 +264,14 @@ func (fs *FontSystem) loadFontWithSize(size int) (*ttf.Font, error) {
 	return nil, fmt.Errorf("could not load any font for size %d", size)
 }
 
-// GetClayFonts retorna as fontes no formato necessário para Clay
-func (fs *FontSystem) GetClayFonts() []claysdl2.Font {
-	if len(fs.clayFonts) == 0 {
-		log.Printf("Warning: GetClayFonts called but no fonts initialized")
-		return []claysdl2.Font{}
-	}
-
-	log.Printf("GetClayFonts returning %d fonts", len(fs.clayFonts))
-	return fs.clayFonts
-}
-
-// GetClayFontsPointer returns a pointer to the internal clayFonts slice for Clay's MeasureText function
+// GetFonts returns a pointer to the internal clayFonts slice for Clay's MeasureText function
 // This ensures Clay gets a stable pointer that won't be garbage collected
-func (fs *FontSystem) GetClayFontsPointer() *[]claysdl2.Font {
-	if len(fs.clayFonts) == 0 {
-		log.Printf("Warning: GetClayFontsPointer called but no fonts initialized")
+func (fs *FontSystem) GetFonts() *[]claysdl2.Font {
+	if len(fs.fonts) == 0 {
+		log.Printf("Warning: GetClayFonts called but no fonts initialized")
 		return nil
 	}
 
-	log.Printf("GetClayFontsPointer returning pointer to %d fonts", len(fs.clayFonts))
-	return &fs.clayFonts
-}
-
-// GetFont retorna uma fonte específica do cache
-func (fs *FontSystem) GetFont(size uint16) *ttf.Font {
-	if font, exists := fs.fontCache[size]; exists {
-		return font
-	}
-
-	// Se não encontrou o tamanho exato, procurar o mais próximo
-	var closestSize uint16
-	var minDiff uint16 = 1000
-
-	for cachedSize := range fs.fontCache {
-		var diff uint16
-		if cachedSize > size {
-			diff = cachedSize - size
-		} else {
-			diff = size - cachedSize
-		}
-
-		if diff < minDiff {
-			minDiff = diff
-			closestSize = cachedSize
-		}
-	}
-
-	return fs.fontCache[closestSize]
+	log.Printf("GetClayFonts returning %d fonts", len(fs.fonts))
+	return &fs.fonts
 }
