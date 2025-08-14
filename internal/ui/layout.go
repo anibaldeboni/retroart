@@ -47,13 +47,11 @@ func NewLayout(renderer *sdl.Renderer, fontSystem *theme.FontSystem) (*Layout, e
 			spatialNav: NewSpatialNavigation(),
 		}
 
-		// Inicializar Clay com o sistema de fontes já inicializado
 		if err := instance.initializeClay(); err != nil {
 			initError = fmt.Errorf("failed to initialize Clay: %w", err)
 			return
 		}
 
-		// Configure text measurement function after fonts are ready
 		err := instance.configureMeasureTextFunction()
 		if err != nil {
 			initError = fmt.Errorf("failed to configure text measurement function: %w", err)
@@ -124,49 +122,69 @@ func (l *Layout) configureMeasureTextFunction() error {
 	return nil
 }
 
-// Render executa o ciclo completo de renderização Clay
+// Render executes the layout rendering process for the Layout instance.
+// It first ensures the rendering context is valid, prepares the layout arena,
+// and then begins the layout process using the clay package. If a screenRenderFunc
+// is provided, it is called to perform custom rendering logic. After ending the layout,
+// it updates spatial navigation and renders the resulting commands to SDL.
+//
+// screenRenderFunc: An optional function that performs additional rendering logic
+//
+//	during the layout process.
 func (l *Layout) Render(screenRenderFunc func()) {
-	// Verificar se o contexto atual existe
-	currentContext := clay.GetCurrentContext()
-	if currentContext == nil {
-		log.Println("Clay current context is nil, trying to set clay context")
-		if l.clayContext != nil {
-			clay.SetCurrentContext(l.clayContext)
-			currentContext = clay.GetCurrentContext()
-			if currentContext == nil {
-				log.Println("Failed to set current context, aborting Render")
-				return
-			}
-		} else {
-			log.Println("Clay context is nil, aborting Render")
-			return
-		}
+	if !l.ensureValidContext() {
+		return
 	}
 
-	// Resetar arena para o offset correto como no clay.h:2155
-	l.clayArena.NextAllocation = l.arenaResetOffset
-	log.Printf("Arena reset to offset: %d", l.arenaResetOffset)
+	l.prepareArena()
 
 	clay.BeginLayout()
-	log.Println("clay.BeginLayout() completed")
-
-	// Executar a função de renderização da tela
 	if screenRenderFunc != nil {
 		screenRenderFunc()
 	}
-
 	commands := clay.EndLayout()
-	log.Printf("clay.EndLayout() completed, got %d commands", commands.Length)
 
-	// Atualizar navegação espacial com os commandos de renderização
+	l.updateSpatialNavigation(commands)
+	l.renderToSDL(commands)
+}
+
+// ensureValidContext verifica e configura um contexto Clay válido
+func (l *Layout) ensureValidContext() bool {
+	currentContext := clay.GetCurrentContext()
+	if currentContext != nil {
+		return true
+	}
+
+	if l.clayContext == nil {
+		log.Println("Clay context is nil, aborting Render")
+		return false
+	}
+
+	clay.SetCurrentContext(l.clayContext)
+	if clay.GetCurrentContext() == nil {
+		log.Println("Failed to set current context, aborting Render")
+		return false
+	}
+
+	return true
+}
+
+// prepareArena prepara a arena Clay para um novo ciclo de renderização
+func (l *Layout) prepareArena() {
+	l.clayArena.NextAllocation = l.arenaResetOffset
+}
+
+// updateSpatialNavigation atualiza o sistema de navegação espacial com os commands de renderização
+func (l *Layout) updateSpatialNavigation(commands clay.RenderCommandArray) {
 	if l.spatialNav != nil {
 		l.spatialNav.UpdateLayout(commands)
 	}
+}
 
-	log.Printf("ClayRender called with %d commands", commands.Length)
+// renderToSDL renderiza os commands Clay usando SDL2
+func (l *Layout) renderToSDL(commands clay.RenderCommandArray) {
 	clayFonts := l.fontSystem.GetFonts()
-	err := claysdl2.ClayRender(l.renderer, commands, *clayFonts)
-	if err != nil {
+	if err := claysdl2.ClayRender(l.renderer, commands, *clayFonts); err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}
 }
