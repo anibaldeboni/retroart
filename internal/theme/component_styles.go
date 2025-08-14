@@ -162,6 +162,114 @@ func (ds DesignSystem) GetMainContainerStyle() ContainerStyle {
 	}
 }
 
+// InputTextStyle contém configurações para campos de texto de entrada
+type InputTextStyle struct {
+	Sizing           clay.Sizing
+	Padding          clay.Padding
+	TextSize         uint16
+	CornerRadius     float32
+	BorderWidth      uint16
+	BackgroundColor  clay.Color
+	BorderColor      clay.Color
+	TextColor        clay.Color
+	CursorColor      clay.Color
+	PlaceholderColor clay.Color
+	// Estados
+	FocusedBackgroundColor clay.Color
+	FocusedBorderColor     clay.Color
+	FocusedTextColor       clay.Color
+}
+
+// VirtualKeyboardStyle contém configurações para o teclado virtual
+type VirtualKeyboardStyle struct {
+	BackgroundColor clay.Color
+	Padding         clay.Padding
+	CornerRadius    float32
+	KeySpacing      uint16
+	MaxWidth        float32
+	MaxHeight       float32
+	KeyButtonStyle  KeyButtonStyle
+}
+
+// KeyButtonStyle contém configurações para botões individuais do teclado
+type KeyButtonStyle struct {
+	Width        float32
+	Height       float32
+	Padding      clay.Padding
+	TextSize     uint16
+	CornerRadius float32
+	// Estados normais
+	BackgroundColor clay.Color
+	BorderColor     clay.Color
+	TextColor       clay.Color
+	// Estados focados
+	FocusedBackgroundColor clay.Color
+	FocusedBorderColor     clay.Color
+	FocusedTextColor       clay.Color
+	// Estados pressionados
+	PressedBackgroundColor clay.Color
+	PressedBorderColor     clay.Color
+	PressedTextColor       clay.Color
+}
+
+// GetInputTextStyle retorna a configuração de estilo para campos de texto
+func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
+	return InputTextStyle{
+		Sizing: clay.Sizing{
+			Width:  clay.SizingFixed(300),
+			Height: clay.SizingFixed(40),
+		},
+		Padding:          clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
+		TextSize:         ds.Typography.Base,
+		CornerRadius:     ds.BorderRadius.Medium,
+		BorderWidth:      1,
+		BackgroundColor:  clay.Color{R: 80, G: 85, B: 95, A: 120}, // Lighter background
+		BorderColor:      ds.Colors.Border,
+		TextColor:        ds.Colors.TextPrimary,
+		CursorColor:      ds.Colors.Primary,
+		PlaceholderColor: ds.Colors.TextMuted,
+
+		// Estados focados
+		FocusedBackgroundColor: clay.Color{R: 90, G: 95, B: 105, A: 140}, // Even lighter when focused
+		FocusedBorderColor:     ds.Colors.Primary,
+		FocusedTextColor:       ds.Colors.TextPrimary,
+	}
+}
+
+// GetVirtualKeyboardStyle retorna a configuração de estilo para o teclado virtual
+func (ds DesignSystem) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
+	return VirtualKeyboardStyle{
+		BackgroundColor: clay.Color{R: 45, G: 47, B: 59, A: 180}, // Semi-transparent dark
+		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
+		CornerRadius:    ds.BorderRadius.Large,
+		KeySpacing:      ds.Spacing.XS,
+		MaxWidth:        480,
+		MaxHeight:       200,
+		KeyButtonStyle: KeyButtonStyle{
+			Width:        33,
+			Height:       36,
+			Padding:      clay.Padding{Left: 4, Right: 4, Top: 4, Bottom: 4},
+			TextSize:     ds.Typography.Small,
+			CornerRadius: ds.BorderRadius.Small,
+
+			// Estado normal
+			BackgroundColor: ds.Colors.SurfaceSecondary,
+			BorderColor:     ds.Colors.Border,
+			TextColor:       ds.Colors.TextPrimary,
+
+			// Estado focado
+			FocusedBackgroundColor: ds.Colors.Primary,
+			FocusedBorderColor:     ds.Colors.PrimaryHover,
+			FocusedTextColor:       ds.Colors.TextOnPrimary,
+
+			// Estado pressionado
+			PressedBackgroundColor: ds.Colors.PrimaryActive,
+			PressedBorderColor:     ds.Colors.Primary,
+			PressedTextColor:       ds.Colors.TextOnPrimary,
+		},
+	}
+}
+
 // GetContentContainerStyle retorna o estilo para containers de conteúdo
 func (ds DesignSystem) GetContentContainerStyle() ContainerStyle {
 	return ContainerStyle{

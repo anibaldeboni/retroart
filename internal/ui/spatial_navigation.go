@@ -334,6 +334,16 @@ func (sn *SpatialNavigation) GetCurrentWidget() Focusable {
 	return sn.focusables[sn.currentFocus]
 }
 
+// GetElementBoundingBox retorna o bounding box de um elemento específico
+func (sn *SpatialNavigation) GetElementBoundingBox(elementID string) *clay.BoundingBox {
+	for i := range sn.elements {
+		if sn.elements[i].ID == elementID {
+			return &sn.elements[i].BoundingBox
+		}
+	}
+	return nil
+}
+
 // Clear limpa todos os elementos e foco
 func (sn *SpatialNavigation) Clear() {
 	sn.elements = sn.elements[:0]

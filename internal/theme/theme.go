@@ -5,6 +5,8 @@ type Theme interface {
 	GetDesignSystem() DesignSystem
 	GetButtonStyle(styleType ComponentStyleType) ButtonStyle
 	GetCheckboxListStyle() CheckboxListStyle
+	GetInputTextStyle() InputTextStyle
+	GetVirtualKeyboardStyle() VirtualKeyboardStyle
 	GetMainContainerStyle() ContainerStyle
 	GetContentContainerStyle() ContainerStyle
 }
@@ -34,6 +36,16 @@ func (t *DefaultTheme) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 // GetCheckboxListStyle retorna o estilo para checkbox lists
 func (t *DefaultTheme) GetCheckboxListStyle() CheckboxListStyle {
 	return t.designSystem.GetCheckboxListStyle()
+}
+
+// GetInputTextStyle retorna o estilo para campos de texto
+func (t *DefaultTheme) GetInputTextStyle() InputTextStyle {
+	return t.designSystem.GetInputTextStyle()
+}
+
+// GetVirtualKeyboardStyle retorna o estilo para o teclado virtual
+func (t *DefaultTheme) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
+	return t.designSystem.GetVirtualKeyboardStyle()
 }
 
 // GetMainContainerStyle retorna o estilo para container principal
@@ -72,6 +84,16 @@ func GetButtonStyle(styleType ComponentStyleType) ButtonStyle {
 // GetCheckboxListStyle é uma função de conveniência para obter estilos de checkbox list
 func GetCheckboxListStyle() CheckboxListStyle {
 	return GetCurrentTheme().GetCheckboxListStyle()
+}
+
+// GetInputTextStyle é uma função de conveniência para obter estilos de campo de texto
+func GetInputTextStyle() InputTextStyle {
+	return GetCurrentTheme().GetInputTextStyle()
+}
+
+// GetVirtualKeyboardStyle é uma função de conveniência para obter estilos de teclado virtual
+func GetVirtualKeyboardStyle() VirtualKeyboardStyle {
+	return GetCurrentTheme().GetVirtualKeyboardStyle()
 }
 
 // GetMainContainerStyle é uma função de conveniência para obter estilos de container principal

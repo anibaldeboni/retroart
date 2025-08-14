@@ -215,3 +215,11 @@ func (l *Layout) HandleSpatialInput(inputType input.InputType) bool {
 	}
 	return false
 }
+
+// GetElementBoundingBox retorna o bounding box de um elemento específico
+func (l *Layout) GetElementBoundingBox(elementID string) *clay.BoundingBox {
+	if l.spatialNav != nil {
+		return l.spatialNav.GetElementBoundingBox(elementID)
+	}
+	return nil
+}

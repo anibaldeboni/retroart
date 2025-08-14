@@ -17,6 +17,7 @@ type Home struct {
 	navigator    Navigator // Use Navigator interface instead of concrete Manager
 	buttons      []*widgets.Button
 	checkboxList *widgets.CheckboxList[string]
+	inputText    *widgets.InputText
 }
 
 func NewHome() *Home {
@@ -67,12 +68,26 @@ func (h *Home) initializeWidgets() {
 	}
 
 	h.checkboxList = widgets.NewCheckboxList("consoles-checkbox-list", testItems)
+
+	// Criar campo de entrada de texto
+	h.inputText = widgets.NewInputText(
+		"test-input-text",
+		"Enter game name...",
+		50,
+		func(text string) {
+			log.Printf("InputText changed: %s", text)
+		},
+		func(text string) {
+			log.Printf("InputText submitted: %s", text)
+		},
+	)
 }
 
 // InitializeFocus configura os widgets no sistema de navegação espacial
 func (h *Home) InitializeFocus() {
 	layout := ui.GetLayout()
 	if layout != nil {
+		layout.RegisterFocusable(h.inputText)
 		layout.RegisterFocusable(h.checkboxList)
 
 		for _, button := range h.buttons {
@@ -182,6 +197,9 @@ func (h *Home) Render() {
 					},
 				},
 			}, func() {
+				// Campo de entrada de texto
+				h.inputText.Render()
+
 				// Renderizar todos os botões focáveis
 				for _, button := range h.buttons {
 					button.Render()
