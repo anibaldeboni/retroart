@@ -272,7 +272,7 @@ func (cl *CheckboxList[T]) renderLabel(itemIndex int) {
 }
 
 func (cl *CheckboxList[T]) getItemBackgroundColor(index int) clay.Color {
-	if cl.FocusedIndex == index {
+	if cl.HasFocus && cl.FocusedIndex == index {
 		return cl.Config.ItemFocusedBg
 	}
 
