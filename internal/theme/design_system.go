@@ -36,14 +36,30 @@ type ColorPalette struct {
 	Background       clay.Color
 	Surface          clay.Color
 	SurfaceSecondary clay.Color
+	SurfaceTertiary  clay.Color
 	Border           clay.Color
 
 	// Cores de texto
-	TextPrimary   clay.Color
-	TextSecondary clay.Color
-	TextMuted     clay.Color
-	TextOnPrimary clay.Color
-	TextOnDanger  clay.Color
+	TextPrimary     clay.Color
+	TextSecondary   clay.Color
+	TextMuted       clay.Color
+	TextOnPrimary   clay.Color
+	TextOnSecondary clay.Color
+	TextOnDanger    clay.Color
+	TextOnSuccess   clay.Color
+	TextPlaceholder clay.Color
+
+	// Cores de input/interação
+	InputBackground        clay.Color
+	InputBackgroundFocused clay.Color
+	InputBorder            clay.Color
+	InputBorderFocused     clay.Color
+
+	// Cores específicas para componentes
+	CheckboxBackground clay.Color
+	CheckboxSelected   clay.Color
+	KeyboardBackground clay.Color
+	Overlay            clay.Color
 }
 
 // Typography define os tamanhos de tipografia
@@ -106,38 +122,54 @@ type Border struct {
 func DefaultDesignSystem() DesignSystem {
 	return DesignSystem{
 		Colors: ColorPalette{
-			// Cores primárias (azul)
-			Primary:       clay.Color{R: 50, G: 120, B: 200, A: 200},
-			PrimaryHover:  clay.Color{R: 30, G: 150, B: 255, A: 255},
-			PrimaryActive: clay.Color{R: 20, G: 100, B: 180, A: 255},
+			// Cores primárias (azul macOS)
+			Primary:       clay.Color{R: 0, G: 122, B: 255, A: 255},
+			PrimaryHover:  clay.Color{R: 10, G: 132, B: 255, A: 255},
+			PrimaryActive: clay.Color{R: 0, G: 112, B: 245, A: 255},
 
-			// Cores secundárias (roxo)
-			Secondary:       clay.Color{R: 120, G: 60, B: 200, A: 180},
-			SecondaryHover:  clay.Color{R: 150, G: 80, B: 255, A: 255},
-			SecondaryActive: clay.Color{R: 100, G: 40, B: 180, A: 255},
+			// Cores secundárias (roxo/índigo macOS)
+			Secondary:       clay.Color{R: 88, G: 86, B: 214, A: 255},
+			SecondaryHover:  clay.Color{R: 98, G: 96, B: 224, A: 255},
+			SecondaryActive: clay.Color{R: 78, G: 76, B: 204, A: 255},
 
-			// Cores semânticas
-			Success:      clay.Color{R: 40, G: 120, B: 80, A: 255},
-			SuccessHover: clay.Color{R: 30, G: 180, B: 120, A: 255},
-			Warning:      clay.Color{R: 255, G: 193, B: 7, A: 255},
-			WarningHover: clay.Color{R: 255, G: 207, B: 50, A: 255},
-			Danger:       clay.Color{R: 200, G: 60, B: 60, A: 180},
-			DangerHover:  clay.Color{R: 255, G: 80, B: 80, A: 255},
-			Info:         clay.Color{R: 60, G: 120, B: 200, A: 255},
-			InfoHover:    clay.Color{R: 80, G: 140, B: 220, A: 255},
+			// Cores semânticas (baseadas no macOS)
+			Success:      clay.Color{R: 52, G: 199, B: 89, A: 255},
+			SuccessHover: clay.Color{R: 62, G: 209, B: 99, A: 255},
+			Warning:      clay.Color{R: 255, G: 159, B: 10, A: 255},
+			WarningHover: clay.Color{R: 255, G: 169, B: 20, A: 255},
+			Danger:       clay.Color{R: 255, G: 69, B: 58, A: 255},
+			DangerHover:  clay.Color{R: 255, G: 79, B: 68, A: 255},
+			Info:         clay.Color{R: 90, G: 200, B: 250, A: 255},
+			InfoHover:    clay.Color{R: 100, G: 210, B: 255, A: 255},
 
-			// Cores neutras
-			Background:       clay.Color{R: 40, G: 42, B: 54, A: 255},
-			Surface:          clay.Color{R: 60, G: 63, B: 75, A: 180},
-			SurfaceSecondary: clay.Color{R: 25, G: 30, B: 40, A: 240},
-			Border:           clay.Color{R: 60, G: 70, B: 85, A: 255},
+			// Cores neutras (macOS dark style)
+			Background:       clay.Color{R: 30, G: 30, B: 30, A: 255},
+			Surface:          clay.Color{R: 44, G: 44, B: 46, A: 255},
+			SurfaceSecondary: clay.Color{R: 58, G: 58, B: 60, A: 255},
+			SurfaceTertiary:  clay.Color{R: 72, G: 72, B: 74, A: 255},
+			Border:           clay.Color{R: 99, G: 99, B: 102, A: 255},
 
-			// Cores de texto
-			TextPrimary:   clay.Color{R: 255, G: 255, B: 255, A: 255},
-			TextSecondary: clay.Color{R: 230, G: 230, B: 230, A: 255},
-			TextMuted:     clay.Color{R: 200, G: 200, B: 200, A: 255},
-			TextOnPrimary: clay.Color{R: 220, G: 230, B: 255, A: 255},
-			TextOnDanger:  clay.Color{R: 255, G: 200, B: 200, A: 255},
+			// Cores de texto (macOS dark theme)
+			TextPrimary:     clay.Color{R: 255, G: 255, B: 255, A: 255},
+			TextSecondary:   clay.Color{R: 235, G: 235, B: 245, A: 153},
+			TextMuted:       clay.Color{R: 235, G: 235, B: 245, A: 102},
+			TextOnPrimary:   clay.Color{R: 255, G: 255, B: 255, A: 255},
+			TextOnSecondary: clay.Color{R: 255, G: 255, B: 255, A: 255},
+			TextOnDanger:    clay.Color{R: 255, G: 255, B: 255, A: 255},
+			TextOnSuccess:   clay.Color{R: 255, G: 255, B: 255, A: 255},
+			TextPlaceholder: clay.Color{R: 235, G: 235, B: 245, A: 76},
+
+			// Cores de input/interação
+			InputBackground:        clay.Color{R: 28, G: 28, B: 30, A: 255},
+			InputBackgroundFocused: clay.Color{R: 44, G: 44, B: 46, A: 255},
+			InputBorder:            clay.Color{R: 72, G: 72, B: 74, A: 255},
+			InputBorderFocused:     clay.Color{R: 0, G: 122, B: 255, A: 255},
+
+			// Cores específicas para components
+			CheckboxBackground: clay.Color{R: 28, G: 28, B: 30, A: 255},
+			CheckboxSelected:   clay.Color{R: 52, G: 199, B: 89, A: 255},
+			KeyboardBackground: clay.Color{R: 44, G: 44, B: 46, A: 220},
+			Overlay:            clay.Color{R: 0, G: 0, B: 0, A: 128},
 		},
 		Typography: Typography{
 			XSmall: 12,
@@ -155,17 +187,26 @@ func DefaultDesignSystem() DesignSystem {
 		},
 		Border: Border{
 			Radius: BorderRadius{
-				Small:  4,  // Restored for custom renderer
-				Medium: 8,  // Restored for custom renderer
-				Large:  12, // Restored for custom renderer
-				XLarge: 16, // Restored for custom renderer
+				Small:  4,
+				Medium: 8,
+				Large:  12,
+				XLarge: 16,
+				// Small:  0,
+				// Medium: 0,
+				// Large:  0,
+				// XLarge: 0,
 			},
 			Width: BorderWidth{
-				XSmall: 0, // Keep disabled to avoid border rendering issues
-				Small:  0, // Keep disabled to avoid border rendering issues
-				Medium: 0, // Keep disabled to avoid border rendering issues
-				Large:  0, // Keep disabled to avoid border rendering issues
-				XLarge: 0, // Keep disabled to avoid border rendering issues
+				// XSmall: 1,
+				// Small:  2,
+				// Medium: 3,
+				// Large:  4,
+				// XLarge: 5,
+				XSmall: 0,
+				Small:  0,
+				Medium: 0,
+				Large:  0,
+				XLarge: 0,
 			},
 		},
 

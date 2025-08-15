@@ -106,7 +106,7 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 	case StyleSecondary:
 		baseStyle.Normal = ButtonColor{
 			BackgroundColor: ds.Colors.Secondary,
-			TextColor:       clay.Color{R: 220, G: 200, B: 255, A: 255}, // Texto roxo claro específico
+			TextColor:       ds.Colors.TextOnSecondary,
 		}
 		baseStyle.Focused = ButtonColor{
 			BackgroundColor: ds.Colors.SecondaryHover,
@@ -152,9 +152,10 @@ func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 		Checkbox: Checkbox{
 			Size:         22,
 			CornerRadius: ds.Border.Radius.Small,
+			Background:   ds.Colors.CheckboxBackground,
 			Color: CheckboxColor{
-				Normal:   ds.Colors.Border,
-				Selected: ds.Colors.SuccessHover,
+				Normal:   ds.Colors.SurfaceTertiary,
+				Selected: ds.Colors.CheckboxSelected,
 				Mark:     ds.Colors.TextPrimary,
 			},
 			Mark: CheckboxMark{
@@ -173,8 +174,8 @@ func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 		ItemNormalBg:     clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
 		ItemSelectedBg:   ds.Colors.Success,
 		ItemFocusedBg:    ds.Colors.Info,
-		ItemNormalText:   clay.Color{R: 220, G: 230, B: 245, A: 255}, // Cinza claro específico
-		ItemSelectedText: clay.Color{R: 180, G: 255, B: 200, A: 255}, // Verde claro específico
+		ItemNormalText:   ds.Colors.TextSecondary,
+		ItemSelectedText: ds.Colors.TextOnSuccess,
 		ItemFocusedText:  ds.Colors.TextPrimary,
 	}
 }
@@ -245,15 +246,15 @@ func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 		TextSize:         ds.Typography.Base,
 		CornerRadius:     ds.Border.Radius.Large,
 		BorderWidth:      1,
-		BackgroundColor:  clay.Color{R: 80, G: 85, B: 95, A: 120}, // Lighter background
-		BorderColor:      ds.Colors.Border,
+		BackgroundColor:  ds.Colors.InputBackground,
+		BorderColor:      ds.Colors.InputBorder,
 		TextColor:        ds.Colors.TextPrimary,
 		CursorColor:      ds.Colors.Primary,
-		PlaceholderColor: ds.Colors.TextMuted,
+		PlaceholderColor: ds.Colors.TextPlaceholder,
 
 		// Estados focados
-		FocusedBackgroundColor: clay.Color{R: 90, G: 95, B: 105, A: 140}, // Even lighter when focused
-		FocusedBorderColor:     ds.Colors.Primary,
+		FocusedBackgroundColor: ds.Colors.InputBackgroundFocused,
+		FocusedBorderColor:     ds.Colors.InputBorderFocused,
 		FocusedTextColor:       ds.Colors.TextPrimary,
 	}
 }
@@ -261,7 +262,7 @@ func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 // GetVirtualKeyboardStyle retorna a configuração de estilo para o teclado virtual
 func (ds DesignSystem) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
 	return VirtualKeyboardStyle{
-		BackgroundColor: clay.Color{R: 45, G: 47, B: 59, A: 180}, // Semi-transparent dark
+		BackgroundColor: ds.Colors.SurfaceTertiary,
 		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
 		CornerRadius:    ds.Border.Radius.Large,
 		KeySpacing:      ds.Spacing.XS,
