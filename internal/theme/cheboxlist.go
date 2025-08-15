@@ -34,7 +34,7 @@ func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 		ChildGap:        ds.Spacing.SM,
 		BackgroundColor: ds.Colors.SurfaceSecondary,
 		ScrollOffset:    0,
-		FontSize:        ds.Typography.Large,
+		FontSize:        ds.Typography.Base,
 		Checkbox: Checkbox{
 			Size:         22,
 			CornerRadius: ds.Border.Radius.Small,

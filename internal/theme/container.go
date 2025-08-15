@@ -27,7 +27,7 @@ func (ds DesignSystem) GetContentContainerStyle() ContainerStyle {
 		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
 		CornerRadius:    ds.Border.Radius.Large,
 		Border: clay.BorderElementConfig{
-			Width: clay.BorderWidth{Left: ds.Border.Width.Small, Right: ds.Border.Width.Small, Top: ds.Border.Width.Small, Bottom: ds.Border.Width.Small},
+			Width: clay.BorderWidth{Left: ds.Border.Width.XSmall, Right: ds.Border.Width.XSmall, Top: ds.Border.Width.XSmall, Bottom: ds.Border.Width.XSmall},
 			Color: ds.Colors.Border,
 		},
 	}

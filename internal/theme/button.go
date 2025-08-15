@@ -21,7 +21,7 @@ type ButtonStyle struct {
 func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle {
 	baseStyle := ButtonStyle{
 		Padding:      clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.MD, Bottom: ds.Spacing.MD},
-		FontSize:     ds.Typography.Large,
+		FontSize:     ds.Typography.Base,
 		CornerRadius: ds.Border.Radius.Large,
 	}
 

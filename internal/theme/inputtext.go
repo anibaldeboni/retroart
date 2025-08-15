@@ -36,9 +36,9 @@ type InputTextStyle struct {
 func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 	return InputTextStyle{
 		Padding:          clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
-		FontSize:         ds.Typography.Large,
+		FontSize:         ds.Typography.Base,
 		CornerRadius:     ds.Border.Radius.Large,
-		BorderWidth:      1,
+		BorderWidth:      ds.Border.Width.XSmall,
 		BackgroundColor:  ds.Colors.InputBackground,
 		BorderColor:      ds.Colors.InputBorder,
 		TextColor:        ds.Colors.TextPrimary,
