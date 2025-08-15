@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 	"retroart-sdl2/internal/input"
+	"retroart-sdl2/internal/renderer"
 	"retroart-sdl2/internal/theme"
 	"sync"
 	"unsafe"
 
 	"github.com/TotallyGamerJet/clay"
-	claysdl2 "github.com/TotallyGamerJet/clay/renderers/sdl2"
 	"github.com/veandco/go-sdl2/sdl"
 
 	"retroart-sdl2/internal/core"
@@ -117,7 +117,7 @@ func (l *Layout) configureMeasureTextFunction() error {
 		return errors.New("no fonts available")
 	}
 
-	clay.SetMeasureTextFunction(claysdl2.MeasureText, unsafe.Pointer(clayFontsPtr))
+	clay.SetMeasureTextFunction(renderer.MeasureText, unsafe.Pointer(clayFontsPtr))
 	log.Printf("Configured text measurement function with stable pointer to %d fonts", len(*clayFontsPtr))
 	return nil
 }
@@ -184,7 +184,7 @@ func (l *Layout) updateSpatialNavigation(commands clay.RenderCommandArray) {
 // renderToSDL renderiza os commands Clay usando SDL2
 func (l *Layout) renderToSDL(commands clay.RenderCommandArray) {
 	clayFonts := l.fontSystem.GetFonts()
-	if err := claysdl2.ClayRender(l.renderer, commands, *clayFonts); err != nil {
+	if err := renderer.ClayRender(l.renderer, commands, *clayFonts); err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}
 }

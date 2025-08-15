@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"retroart-sdl2/internal/renderer"
+
 	"github.com/TotallyGamerJet/clay"
-	claysdl2 "github.com/TotallyGamerJet/clay/renderers/sdl2"
 	"github.com/veandco/go-sdl2/ttf"
 )
 
@@ -154,17 +155,17 @@ func DefaultDesignSystem() DesignSystem {
 		},
 		Border: Border{
 			Radius: BorderRadius{
-				Small:  4,
-				Medium: 8,
-				Large:  12,
-				XLarge: 16,
+				Small:  4,  // Restored for custom renderer
+				Medium: 8,  // Restored for custom renderer
+				Large:  12, // Restored for custom renderer
+				XLarge: 16, // Restored for custom renderer
 			},
 			Width: BorderWidth{
-				XSmall: 1,
-				Small:  2,
-				Medium: 3,
-				Large:  4,
-				XLarge: 5,
+				XSmall: 0, // Keep disabled to avoid border rendering issues
+				Small:  0, // Keep disabled to avoid border rendering issues
+				Medium: 0, // Keep disabled to avoid border rendering issues
+				Large:  0, // Keep disabled to avoid border rendering issues
+				XLarge: 0, // Keep disabled to avoid border rendering issues
 			},
 		},
 
@@ -218,13 +219,13 @@ func GetFontIdForSize(fontSize uint16) uint16 {
 
 // FontSystem gerencia o carregamento de fontes baseado na tipografia
 type FontSystem struct {
-	fonts []claysdl2.Font
+	fonts []renderer.Font
 }
 
 // NewFontSystem cria um novo sistema de fontes
 func NewFontSystem() *FontSystem {
 	return &FontSystem{
-		fonts: make([]claysdl2.Font, 0),
+		fonts: make([]renderer.Font, 0),
 	}
 }
 
@@ -249,7 +250,7 @@ func (fs *FontSystem) InitializeFonts() error {
 		typographyInts[i] = int(size)
 	}
 
-	fs.fonts = make([]claysdl2.Font, len(typographyInts))
+	fs.fonts = make([]renderer.Font, len(typographyInts))
 
 	for i, size := range typographyInts {
 		font, err := fs.loadFontWithSize(size)
@@ -257,7 +258,7 @@ func (fs *FontSystem) InitializeFonts() error {
 			return fmt.Errorf("failed to load font size %d: %v", size, err)
 		}
 
-		clayFont := claysdl2.Font{Font: font}
+		clayFont := renderer.Font{FontId: uint32(i), Font: font}
 		fs.fonts[i] = clayFont
 		log.Printf("Successfully loaded font size %d at index %d", size, i)
 	}
@@ -290,7 +291,7 @@ func (fs *FontSystem) loadFontWithSize(size int) (*ttf.Font, error) {
 
 // GetFonts returns a pointer to the internal clayFonts slice for Clay's MeasureText function
 // This ensures Clay gets a stable pointer that won't be garbage collected
-func (fs *FontSystem) GetFonts() *[]claysdl2.Font {
+func (fs *FontSystem) GetFonts() *[]renderer.Font {
 	if len(fs.fonts) == 0 {
 		log.Printf("Warning: GetClayFonts called but no fonts initialized")
 		return nil

@@ -167,7 +167,7 @@ func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 				DownSymbol: "▼",
 			},
 		},
-		CornerRadius: ds.Border.Radius.Medium,
+		CornerRadius: ds.Border.Radius.Large,
 
 		// Estados dos itens
 		ItemNormalBg:     clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
@@ -243,7 +243,7 @@ func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 	return InputTextStyle{
 		Padding:          clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
 		TextSize:         ds.Typography.Base,
-		CornerRadius:     ds.Border.Radius.Medium,
+		CornerRadius:     ds.Border.Radius.Large,
 		BorderWidth:      1,
 		BackgroundColor:  clay.Color{R: 80, G: 85, B: 95, A: 120}, // Lighter background
 		BorderColor:      ds.Colors.Border,
@@ -272,7 +272,7 @@ func (ds DesignSystem) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
 			Height:       36,
 			Padding:      clay.Padding{Left: 4, Right: 4, Top: 4, Bottom: 4},
 			TextSize:     ds.Typography.Small,
-			CornerRadius: ds.Border.Radius.Small,
+			CornerRadius: ds.Border.Radius.Large,
 
 			// Estado normal
 			BackgroundColor: ds.Colors.SurfaceSecondary,
@@ -297,7 +297,7 @@ func (ds DesignSystem) GetContentContainerStyle() ContainerStyle {
 	return ContainerStyle{
 		BackgroundColor: ds.Colors.Surface,
 		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
-		CornerRadius:    ds.Border.Radius.Medium,
+		CornerRadius:    ds.Border.Radius.Large,
 		Border: clay.BorderElementConfig{
 			Width: clay.BorderWidth{Left: ds.Border.Width.Small, Right: ds.Border.Width.Small, Top: ds.Border.Width.Small, Bottom: ds.Border.Width.Small},
 			Color: ds.Colors.Border,
