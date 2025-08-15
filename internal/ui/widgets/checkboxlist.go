@@ -9,7 +9,8 @@ import (
 	"github.com/TotallyGamerJet/clay"
 )
 
-// CheckboxListItem é um item da lista com tipo genérico para Value
+// CheckboxListItem represents an item in a checkbox list widget.
+// It holds a label for display, a value of generic type T, and a flag indicating whether the item is selected.
 type CheckboxListItem[T any] struct {
 	Label    string
 	Value    T
@@ -18,14 +19,24 @@ type CheckboxListItem[T any] struct {
 
 type CheckboxListConfig = theme.CheckboxListStyle
 
-// CheckboxList é um componente de lista com checkboxes (versão genérica)
+// CheckboxList represents a generic list of items with checkboxes, supporting scrolling,
+// focus management, and configurable appearance. It is parameterized by type T, allowing
+// for flexible item data. The struct maintains state for visible items, focus, and sizing.
+//
+// Fields:
+//   - ID: Unique identifier for the checkbox list.
+//   - Items: Slice of CheckboxListItem[T], representing the items in the list.
+//   - Config: Configuration options for the checkbox list's appearance and behavior.
+//   - ScrollOffset: Current scroll offset in the list.
+//   - FocusedIndex: Index of the currently focused item.
+//   - HasFocus: Indicates whether the list currently has focus.
+//   - Width: Width sizing configuration for the list.
+//   - Height: Height sizing configuration for the list.
 type CheckboxList[T any] struct {
 	ID               string
 	Items            []CheckboxListItem[T]
 	Config           CheckboxListConfig
 	ScrollOffset     int
-	VisibleStart     int
-	VisibleEnd       int
 	FocusedIndex     int
 	HasFocus         bool
 	Width            clay.SizingAxis
@@ -36,7 +47,20 @@ type CheckboxList[T any] struct {
 	scrollUpHeight   float32
 }
 
-// NewCheckboxList cria uma nova lista usando o design system
+// NewCheckboxList creates and returns a new CheckboxList widget with the specified parameters.
+//
+// Parameters:
+//   - id:      A unique identifier for the CheckboxList.
+//   - width:   The width of the CheckboxList, specified as a clay.SizingAxis.
+//   - height:  The height of the CheckboxList, specified as a clay.SizingAxis.
+//   - items:   A slice of CheckboxListItem[T] representing the items to display.
+//
+// The CheckboxList is initialized with the provided items, style configuration from the theme,
+// and default focus and scroll state.
+//
+// Returns:
+//
+//	A pointer to the newly created CheckboxList[T].
 func NewCheckboxList[T any](id string, width, height clay.SizingAxis, items []CheckboxListItem[T]) *CheckboxList[T] {
 	return &CheckboxList[T]{
 		ID:           id,

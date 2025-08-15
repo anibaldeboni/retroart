@@ -19,7 +19,13 @@ type Button struct {
 	enabled bool
 }
 
-// NewButton cria um novo botão usando o design system
+// NewButton creates and returns a new Button instance with the specified parameters.
+// id: unique identifier for the button.
+// label: text displayed on the button.
+// width: button width as a clay.SizingAxis value.
+// height: button height as a clay.SizingAxis value.
+// styleType: visual style of the button, defined by theme.ComponentStyleType.
+// onClick: callback function executed when the button is clicked.
 func NewButton(id, label string, width, height clay.SizingAxis, styleType theme.ComponentStyleType, onClick func()) *Button {
 	return &Button{
 		ID:      id,
@@ -32,7 +38,6 @@ func NewButton(id, label string, width, height clay.SizingAxis, styleType theme.
 	}
 }
 
-// Interface Focusable implementation
 func (b *Button) GetID() string {
 	return b.ID
 }
@@ -92,9 +97,4 @@ func (b *Button) Render() {
 	})
 
 	log.Printf("Button: render id=%s focused=%t", b.ID, b.focused)
-}
-
-// SetEnabled habilita/desabilita o botão
-func (b *Button) SetEnabled(enabled bool) {
-	b.enabled = enabled
 }
