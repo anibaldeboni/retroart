@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log"
+	"maps"
 	"math"
 	"retroart-sdl2/internal/input"
 
@@ -45,15 +46,11 @@ func (sn *SpatialNavigation) UnregisterFocusable(id string) {
 	log.Printf("SpatialNavigation: Unregistered focusable '%s'", id)
 }
 
-// UpdateLayout atualiza as posições dos elementos baseado nos comandos de renderização do Clay
 func (sn *SpatialNavigation) UpdateLayout(commands clay.RenderCommandArray) {
 	log.Printf("SpatialNavigation: Processing %d commands, have %d registered focusables", int(commands.Length), len(sn.focusables))
 
 	// List registered focusables for debugging
-	log.Println("SpatialNavigation: Registered focusables:")
-	for id := range sn.focusables {
-		log.Printf("  - '%s'", id)
-	}
+	log.Printf("SpatialNavigation: Registered focusables: %v", maps.Keys(sn.focusables))
 
 	// Clear current elements
 	sn.elements = sn.elements[:0]

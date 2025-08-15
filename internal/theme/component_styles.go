@@ -14,8 +14,8 @@ const (
 	StyleInfo      ComponentStyleType = "info"
 )
 
-// ButtonState define a aparência de um estado específico do botão
-type ButtonState struct {
+// ButtonColor define a aparência de um estado específico do botão
+type ButtonColor struct {
 	BackgroundColor clay.Color
 	TextColor       clay.Color
 }
@@ -25,17 +25,45 @@ type ButtonStyle struct {
 	Padding      clay.Padding
 	TextSize     uint16
 	CornerRadius float32
-	Normal       ButtonState
-	Focused      ButtonState
+	Normal       ButtonColor
+	Focused      ButtonColor
+}
+
+type Checkbox struct {
+	Size            float32
+	Border          clay.BorderElementConfig
+	CornerRadius    float32
+	Background      clay.Color
+	Mark            CheckboxMark
+	ScrollIndicator CheckboxScrollIndicator
+	Color           CheckboxColor
+}
+
+type CheckboxMark struct {
+	Symbol string
+	Size   uint16
+}
+
+type CheckboxScrollIndicator struct {
+	Size       uint16
+	UpSymbol   string
+	DownSymbol string
+}
+
+type CheckboxColor struct {
+	Normal   clay.Color
+	Selected clay.Color
+	Mark     clay.Color
 }
 
 // CheckboxListStyle contém configurações para checkbox lists
 type CheckboxListStyle struct {
+	FontSize        uint16
 	Padding         clay.Padding
 	ChildGap        uint16
 	BackgroundColor clay.Color
 	ScrollOffset    int
-	CheckboxSize    float32
+	Checkbox        Checkbox
 	CornerRadius    float32
 
 	// Cores para diferentes estados dos itens
@@ -45,11 +73,6 @@ type CheckboxListStyle struct {
 	ItemNormalText   clay.Color
 	ItemSelectedText clay.Color
 	ItemFocusedText  clay.Color
-
-	// Cores do checkbox
-	CheckboxNormal   clay.Color
-	CheckboxSelected clay.Color
-	CheckboxMark     clay.Color
 }
 
 // ContainerStyle define estilos para containers
@@ -71,41 +94,41 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 
 	switch styleType {
 	case StylePrimary:
-		baseStyle.Normal = ButtonState{
+		baseStyle.Normal = ButtonColor{
 			BackgroundColor: ds.Colors.Primary,
 			TextColor:       ds.Colors.TextOnPrimary,
 		}
-		baseStyle.Focused = ButtonState{
+		baseStyle.Focused = ButtonColor{
 			BackgroundColor: ds.Colors.PrimaryHover,
 			TextColor:       ds.Colors.TextPrimary,
 		}
 
 	case StyleSecondary:
-		baseStyle.Normal = ButtonState{
+		baseStyle.Normal = ButtonColor{
 			BackgroundColor: ds.Colors.Secondary,
 			TextColor:       clay.Color{R: 220, G: 200, B: 255, A: 255}, // Texto roxo claro específico
 		}
-		baseStyle.Focused = ButtonState{
+		baseStyle.Focused = ButtonColor{
 			BackgroundColor: ds.Colors.SecondaryHover,
 			TextColor:       ds.Colors.TextPrimary,
 		}
 
 	case StyleDanger:
-		baseStyle.Normal = ButtonState{
+		baseStyle.Normal = ButtonColor{
 			BackgroundColor: ds.Colors.Danger,
 			TextColor:       ds.Colors.TextOnDanger,
 		}
-		baseStyle.Focused = ButtonState{
+		baseStyle.Focused = ButtonColor{
 			BackgroundColor: ds.Colors.DangerHover,
 			TextColor:       ds.Colors.TextPrimary,
 		}
 
 	case StyleSuccess:
-		baseStyle.Normal = ButtonState{
+		baseStyle.Normal = ButtonColor{
 			BackgroundColor: ds.Colors.Success,
 			TextColor:       ds.Colors.TextPrimary,
 		}
-		baseStyle.Focused = ButtonState{
+		baseStyle.Focused = ButtonColor{
 			BackgroundColor: ds.Colors.SuccessHover,
 			TextColor:       ds.Colors.TextPrimary,
 		}
@@ -121,12 +144,30 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 // GetCheckboxListStyle retorna a configuração de estilo para checkbox lists
 func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 	return CheckboxListStyle{
-		Padding:         clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
+		Padding:         clay.Padding{Left: ds.Spacing.SM, Right: ds.Spacing.SM, Top: ds.Spacing.MD, Bottom: ds.Spacing.MD},
 		ChildGap:        ds.Spacing.SM,
 		BackgroundColor: ds.Colors.SurfaceSecondary,
 		ScrollOffset:    0,
-		CheckboxSize:    20,
-		CornerRadius:    ds.Border.Radius.Medium,
+		FontSize:        ds.Typography.Small,
+		Checkbox: Checkbox{
+			Size:         22,
+			CornerRadius: ds.Border.Radius.Small,
+			Color: CheckboxColor{
+				Normal:   ds.Colors.Border,
+				Selected: ds.Colors.SuccessHover,
+				Mark:     ds.Colors.TextPrimary,
+			},
+			Mark: CheckboxMark{
+				Symbol: "◣",
+				Size:   ds.Typography.Small,
+			},
+			ScrollIndicator: CheckboxScrollIndicator{
+				Size:       ds.Typography.Small,
+				UpSymbol:   "▲",
+				DownSymbol: "▼",
+			},
+		},
+		CornerRadius: ds.Border.Radius.Medium,
 
 		// Estados dos itens
 		ItemNormalBg:     clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
@@ -135,11 +176,6 @@ func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 		ItemNormalText:   clay.Color{R: 220, G: 230, B: 245, A: 255}, // Cinza claro específico
 		ItemSelectedText: clay.Color{R: 180, G: 255, B: 200, A: 255}, // Verde claro específico
 		ItemFocusedText:  ds.Colors.TextPrimary,
-
-		// Checkbox
-		CheckboxNormal:   ds.Colors.Border,
-		CheckboxSelected: ds.Colors.SuccessHover,
-		CheckboxMark:     ds.Colors.TextPrimary,
 	}
 }
 

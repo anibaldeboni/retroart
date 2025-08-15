@@ -82,12 +82,13 @@ func (h *Home) initializeWidgets() {
 		{Label: "NeoGeo", Value: "game14", Selected: true},
 		{Label: "GameGear", Value: "game15", Selected: false},
 		{Label: "PlayStation", Value: "game16", Selected: false},
+		{Label: "PSP", Value: "game16", Selected: false},
 	}
 
 	h.checkboxList = widgets.NewCheckboxList(
 		"consoles-checkbox-list",
 		clay.SizingGrow(0),
-		clay.SizingGrow(0),
+		clay.SizingFixed(610),
 		testItems,
 	)
 
@@ -153,7 +154,7 @@ func (h *Home) Render() {
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
 					Width:  clay.SizingPercent(0.35),
-					Height: clay.SizingGrow(0),
+					Height: clay.SizingPercent(1.0),
 				},
 				Padding:         containerStyle.Padding,
 				ChildGap:        spacing.SM,
