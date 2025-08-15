@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"retroart-sdl2/internal/renderer"
-
 	"github.com/TotallyGamerJet/clay"
+	"github.com/TotallyGamerJet/clay/renderers/sdl2"
 	"github.com/veandco/go-sdl2/ttf"
 )
 
@@ -187,14 +186,14 @@ func DefaultDesignSystem() DesignSystem {
 		},
 		Border: Border{
 			Radius: BorderRadius{
-				Small:  4,
-				Medium: 8,
-				Large:  12,
-				XLarge: 16,
-				// Small:  0,
-				// Medium: 0,
-				// Large:  0,
-				// XLarge: 0,
+				// Small:  4,
+				// Medium: 8,
+				// Large:  12,
+				// XLarge: 16,
+				Small:  0,
+				Medium: 0,
+				Large:  0,
+				XLarge: 0,
 			},
 			Width: BorderWidth{
 				// XSmall: 1,
@@ -260,13 +259,13 @@ func GetFontIdForSize(fontSize uint16) uint16 {
 
 // FontSystem gerencia o carregamento de fontes baseado na tipografia
 type FontSystem struct {
-	fonts []renderer.Font
+	fonts []sdl2.Font
 }
 
 // NewFontSystem cria um novo sistema de fontes
 func NewFontSystem() *FontSystem {
 	return &FontSystem{
-		fonts: make([]renderer.Font, 0),
+		fonts: make([]sdl2.Font, 0),
 	}
 }
 
@@ -291,7 +290,7 @@ func (fs *FontSystem) InitializeFonts() error {
 		typographyInts[i] = int(size)
 	}
 
-	fs.fonts = make([]renderer.Font, len(typographyInts))
+	fs.fonts = make([]sdl2.Font, len(typographyInts))
 
 	for i, size := range typographyInts {
 		font, err := fs.loadFontWithSize(size)
@@ -299,7 +298,7 @@ func (fs *FontSystem) InitializeFonts() error {
 			return fmt.Errorf("failed to load font size %d: %v", size, err)
 		}
 
-		clayFont := renderer.Font{FontId: uint32(i), Font: font}
+		clayFont := sdl2.Font{FontId: uint32(i), Font: font}
 		fs.fonts[i] = clayFont
 		log.Printf("Successfully loaded font size %d at index %d", size, i)
 	}
@@ -332,7 +331,7 @@ func (fs *FontSystem) loadFontWithSize(size int) (*ttf.Font, error) {
 
 // GetFonts returns a pointer to the internal clayFonts slice for Clay's MeasureText function
 // This ensures Clay gets a stable pointer that won't be garbage collected
-func (fs *FontSystem) GetFonts() *[]renderer.Font {
+func (fs *FontSystem) GetFonts() *[]sdl2.Font {
 	if len(fs.fonts) == 0 {
 		log.Printf("Warning: GetClayFonts called but no fonts initialized")
 		return nil

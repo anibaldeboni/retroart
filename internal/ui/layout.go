@@ -11,6 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/TotallyGamerJet/clay"
+	"github.com/TotallyGamerJet/clay/renderers/sdl2"
 	"github.com/veandco/go-sdl2/sdl"
 
 	"retroart-sdl2/internal/core"
@@ -184,7 +185,7 @@ func (l *Layout) updateSpatialNavigation(commands clay.RenderCommandArray) {
 // renderToSDL renderiza os commands Clay usando SDL2
 func (l *Layout) renderToSDL(commands clay.RenderCommandArray) {
 	clayFonts := l.fontSystem.GetFonts()
-	if err := renderer.ClayRender(l.renderer, commands, *clayFonts); err != nil {
+	if err := sdl2.ClayRender(l.renderer, commands, *clayFonts); err != nil {
 		log.Printf("Error rendering Clay commands: %v", err)
 	}
 }
