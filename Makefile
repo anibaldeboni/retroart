@@ -1,7 +1,7 @@
 # RetroArt TrimUI Smart Pro Makefile
 # ===================================
 
-.PHONY: help build run clean shell logs docker-build docker-clean native-build native-run
+.PHONY: help build run clean shell logs docker-build docker-clean build-trimui run
 
 # Default target
 .DEFAULT_GOAL := help
@@ -9,8 +9,8 @@
 # Project configuration
 PROJECT_NAME := retroart
 BIN_DIR := bin
-BINARY_NAME := $(BIN_DIR)/retroart
-TRIMUI_BINARY_NAME := $(BIN_DIR)/retroart-trimui-arm64
+BINARY_NAME := $(BIN_DIR)/$(PROJECT_NAME)
+TRIMUI_BINARY_NAME := $(BIN_DIR)/$(PROJECT_NAME)-trimui-arm64
 GO_CMD := go
 DOCKER_COMPOSE := docker compose
 
@@ -22,21 +22,21 @@ RED := \033[0;31m
 NC := \033[0m # No Color
 
 help: ## Show this help message
-	@echo "$(BLUE)🐳 RetroArt TrimUI Smart Pro Build System$(NC)"
+	@echo "$(BLUE)🐳 $(PROJECT_NAME) TrimUI Smart Pro Build System$(NC)"
 	@echo "$(BLUE)==========================================$(NC)"
 	@echo ""
 	@echo "$(GREEN)Available targets:$(NC)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(YELLOW)%-15s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-build: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
+build-trimui: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
 	@echo "$(GREEN)🏗️  Building TrimUI Smart Pro cross-compilation...$(NC)"
 	@echo ""
 	@echo "$(BLUE)📦 Preparing Docker TrimUI SDL2 environment...$(NC)"
-	$(DOCKER_COMPOSE) build retroart-build
+	$(DOCKER_COMPOSE) build $(PROJECT_NAME)-build
 	@echo ""
 	@echo "$(BLUE)🔧 Executing TrimUI SDL2 cross-compilation...$(NC)"
 	@mkdir -p $(BIN_DIR)
-	$(DOCKER_COMPOSE) run --rm retroart-build
+	$(DOCKER_COMPOSE) run --rm $(PROJECT_NAME)-build
 	@if [ -f "$(TRIMUI_BINARY_NAME)" ]; then \
 		echo ""; \
 		echo "$(GREEN)✅ TrimUI build completed successfully!$(NC)"; \
@@ -50,25 +50,23 @@ build: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
 		exit 1; \
 	fi
 
-native-build: ## Build native binary for local development
+build: ## Build native binary for local development
 	@echo "$(GREEN)🔨 Building native binary...$(NC)"
 	@mkdir -p $(BIN_DIR)
-	$(GO_CMD) build -o $(BINARY_NAME) cmd/retroart/main.go
+	$(GO_CMD) build -o $(BINARY_NAME) cmd/$(PROJECT_NAME)/main.go
 	@echo "$(GREEN)✅ Native build completed: $(BINARY_NAME)$(NC)"
 
-run: native-build ## Build and run the application locally
-	@echo "$(GREEN)🚀 Running RetroArt locally...$(NC)"
-	./$(BINARY_NAME)
-
-native-run: run ## Alias for 'run' target
+run: ## Build and run the application locally
+	@echo "$(GREEN)🚀 Running $(PROJECT_NAME) locally...$(NC)"
+	@$(GO_CMD) run ./...
 
 shell: ## Open interactive shell in Docker container for debugging
 	@echo "$(BLUE)🐚 Opening interactive TrimUI SDL2 shell...$(NC)"
-	@echo "   Use 'mkdir -p bin && go build -o bin/retroart-trimui-arm64 cmd/retroart/main.go' to compile manually"
+	@echo "   Use 'mkdir -p bin && go build -o bin/$(PROJECT_NAME)-trimui-arm64 cmd/$(PROJECT_NAME)/main.go' to compile manually"
 	@echo "   Use 'exit' to quit"
 	@echo ""
-	$(DOCKER_COMPOSE) build retroart-builder
-	$(DOCKER_COMPOSE) run --rm retroart-builder
+	$(DOCKER_COMPOSE) build $(PROJECT_NAME)-builder
+	$(DOCKER_COMPOSE) run --rm $(PROJECT_NAME)-builder
 
 docker-build: ## Build Docker images
 	@echo "$(BLUE)📦 Building Docker images...$(NC)"
@@ -78,7 +76,7 @@ clean: ## Clean up containers, images and binaries
 	@echo "$(YELLOW)🧹 Cleaning up containers and images...$(NC)"
 	$(DOCKER_COMPOSE) down --remove-orphans
 	@echo "$(YELLOW)🗑️  Removing project-related Docker images...$(NC)"
-	@docker images | grep retroart | awk '{print $$3}' | xargs -r docker rmi || true
+	@docker images | grep $(PROJECT_NAME) | awk '{print $$3}' | xargs -r docker rmi || true
 	$(DOCKER_COMPOSE) down -v
 	@echo "$(YELLOW)🗑️  Removing local binaries...$(NC)"
 	rm -rf $(BIN_DIR)
@@ -87,13 +85,13 @@ clean: ## Clean up containers, images and binaries
 docker-clean: ## Clean only Docker resources (keep binaries)
 	@echo "$(YELLOW)🧹 Cleaning Docker resources...$(NC)"
 	$(DOCKER_COMPOSE) down --remove-orphans
-	@docker images | grep retroart | awk '{print $$3}' | xargs -r docker rmi || true
+	@docker images | grep $(PROJECT_NAME) | awk '{print $$3}' | xargs -r docker rmi || true
 	$(DOCKER_COMPOSE) down -v
 	@echo "$(GREEN)✅ Docker cleanup completed$(NC)"
 
 logs: ## Show logs from last Docker build
 	@echo "$(BLUE)📋 Logs from last build:$(NC)"
-	$(DOCKER_COMPOSE) logs retroart-build
+	$(DOCKER_COMPOSE) logs $(PROJECT_NAME)-build
 
 test: ## Run tests
 	@echo "$(GREEN)🧪 Running tests...$(NC)"
@@ -115,10 +113,10 @@ check: fmt vet test ## Run all checks (format, vet, test)
 	@echo "$(GREEN)✅ All checks completed$(NC)"
 
 # Development workflow
-dev: clean native-build run ## Clean, build and run for development
+dev: clean build run ## Clean, build and run for development
 
 # Production workflow  
-prod: clean build ## Clean and build for production (TrimUI)
+prod: clean build-trimui ## Clean and build for production (TrimUI)
 
 # Check prerequisites
 check-docker: ## Check if Docker is running
