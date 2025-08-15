@@ -75,21 +75,21 @@ func (app *App) Init() error {
 }
 
 func (app *App) Run() {
-	targetFrameTime := uint64(1000 / core.FPS) // ms por frame
+	// targetFrameTime := uint64(1000 / core.FPS) // ms por frame
 	inputCh := input.Initialize()
 
 	for app.running {
-		frameStart := sdl.GetTicks64()
+		// frameStart := sdl.GetTicks64()
 
 		app.handleEvents(inputCh)
 		app.update()
 		app.render()
 
-		// Controle de FPS
-		frameTime := sdl.GetTicks64() - frameStart
-		if frameTime < targetFrameTime {
-			sdl.Delay(uint32(targetFrameTime - frameTime))
-		}
+		// // Controle de FPS
+		// frameTime := sdl.GetTicks64() - frameStart
+		// if frameTime < targetFrameTime {
+		// 	sdl.Delay(uint32(targetFrameTime - frameTime))
+		// }
 	}
 }
 
