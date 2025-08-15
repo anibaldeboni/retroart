@@ -1,7 +1,7 @@
 # RetroArt TrimUI Smart Pro Makefile
 # ===================================
 
-.PHONY: help build run clean shell logs docker-build docker-clean build-trimui run
+.PHONY: help build run clean shell logs docker-build docker-clean trimui-build run
 
 # Default target
 .DEFAULT_GOAL := help
@@ -28,7 +28,7 @@ help: ## Show this help message
 	@echo "$(GREEN)Available targets:$(NC)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(YELLOW)%-15s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-build-trimui: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
+trimui-build: docker-build ## Build ARM64 binary for TrimUI Smart Pro using Docker
 	@echo "$(GREEN)🏗️  Building TrimUI Smart Pro cross-compilation...$(NC)"
 	@echo ""
 	@echo "$(BLUE)📦 Preparing Docker TrimUI SDL2 environment...$(NC)"
@@ -116,7 +116,7 @@ check: fmt vet test ## Run all checks (format, vet, test)
 dev: clean build run ## Clean, build and run for development
 
 # Production workflow  
-prod: clean build-trimui ## Clean and build for production (TrimUI)
+prod: clean trimui-build ## Clean and build for production (TrimUI)
 
 # Check prerequisites
 check-docker: ## Check if Docker is running
