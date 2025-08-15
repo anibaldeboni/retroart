@@ -22,6 +22,76 @@ const (
 	KeyboardActionSymbols
 )
 
+var keys = [][]Key{
+	// Linha de números com símbolos correspondentes
+	{
+		{Display: "1", Value: "1", SymbolValue: "!", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "2", Value: "2", SymbolValue: "@", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "3", Value: "3", SymbolValue: "#", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "4", Value: "4", SymbolValue: "$", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "5", Value: "5", SymbolValue: "%", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "6", Value: "6", SymbolValue: "¨", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "7", Value: "7", SymbolValue: "&", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "8", Value: "8", SymbolValue: "*", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "9", Value: "9", SymbolValue: "(", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "0", Value: "0", SymbolValue: ")", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "-", Value: "-", SymbolValue: "_", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "=", Value: "=", SymbolValue: "+", Action: KeyboardActionCharacter, Width: 0},
+	},
+	// Primeira linha de letras
+	{
+		{Display: "Q", Value: "q", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "W", Value: "w", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "E", Value: "e", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "R", Value: "r", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "T", Value: "t", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "Y", Value: "y", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "U", Value: "u", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "I", Value: "i", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "O", Value: "o", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "P", Value: "p", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "[", Value: "[", SymbolValue: "{", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "]", Value: "]", SymbolValue: "}", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "\\", Value: "\\", SymbolValue: "|", Action: KeyboardActionCharacter, Width: 0},
+	},
+	// Segunda linha de letras
+	{
+		{Display: "A", Value: "a", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "S", Value: "s", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "D", Value: "d", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "F", Value: "f", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "G", Value: "g", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "H", Value: "h", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "J", Value: "j", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "K", Value: "k", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "L", Value: "l", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: ";", Value: ";", SymbolValue: ":", Action: KeyboardActionCharacter, Width: 0},
+	},
+	// Terceira linha de letras
+	{
+
+		{Display: "Z", Value: "z", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "X", Value: "x", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "C", Value: "c", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "V", Value: "v", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "B", Value: "b", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "N", Value: "n", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "M", Value: "m", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
+		{Display: ",", Value: ",", SymbolValue: "<", Action: KeyboardActionCharacter, Width: 0},
+		{Display: ".", Value: ".", SymbolValue: ">", Action: KeyboardActionCharacter, Width: 0},
+		{Display: "/", Value: "/", SymbolValue: "?", Action: KeyboardActionCharacter, Width: 0},
+	},
+	// Linha de ações
+	{
+		{Display: "Shift", Value: "", SymbolValue: "", Action: KeyboardActionShift, Width: 0},
+		{Display: "Sym", Value: "", SymbolValue: "", Action: KeyboardActionSymbols, Width: 0},
+		{Display: "Space", Value: " ", SymbolValue: " ", Action: KeyboardActionSpace, Width: 0},
+		{Display: "Back", Value: "", SymbolValue: "", Action: KeyboardActionBackspace, Width: 0},
+		{Display: "Enter", Value: "", SymbolValue: "", Action: KeyboardActionEnter, Width: 0},
+		{Display: "Cancel", Value: "", SymbolValue: "", Action: KeyboardActionCancel, Width: 0},
+	},
+}
+
 // Key representa uma tecla individual do teclado virtual
 type Key struct {
 	Display     string
@@ -55,84 +125,10 @@ func NewVirtualKeyboard(id string, onInput func(KeyboardAction, string)) *Virtua
 		onInput:     onInput,
 		upperCase:   false,
 		symbolsMode: false,
+		keys:        keys,
 	}
 
-	vk.initializeKeys()
 	return vk
-}
-
-// initializeKeys inicializa o layout do teclado QWERTY
-func (vk *VirtualKeyboard) initializeKeys() {
-	// Layout QWERTY otimizado para controlador
-	vk.keys = [][]Key{
-		// Linha de números com símbolos correspondentes
-		{
-			{Display: "1", Value: "1", SymbolValue: "!", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "2", Value: "2", SymbolValue: "@", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "3", Value: "3", SymbolValue: "#", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "4", Value: "4", SymbolValue: "$", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "5", Value: "5", SymbolValue: "%", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "6", Value: "6", SymbolValue: "¨", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "7", Value: "7", SymbolValue: "&", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "8", Value: "8", SymbolValue: "*", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "9", Value: "9", SymbolValue: "(", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "0", Value: "0", SymbolValue: ")", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "-", Value: "-", SymbolValue: "_", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "=", Value: "=", SymbolValue: "+", Action: KeyboardActionCharacter, Width: 0},
-		},
-		// Primeira linha de letras
-		{
-			{Display: "Q", Value: "q", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "W", Value: "w", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "E", Value: "e", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "R", Value: "r", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "T", Value: "t", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "Y", Value: "y", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "U", Value: "u", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "I", Value: "i", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "O", Value: "o", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "P", Value: "p", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "[", Value: "[", SymbolValue: "{", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "]", Value: "]", SymbolValue: "}", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "\\", Value: "\\", SymbolValue: "|", Action: KeyboardActionCharacter, Width: 0},
-		},
-		// Segunda linha de letras
-		{
-			{Display: "A", Value: "a", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "S", Value: "s", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "D", Value: "d", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "F", Value: "f", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "G", Value: "g", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "H", Value: "h", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "J", Value: "j", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "K", Value: "k", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "L", Value: "l", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: ";", Value: ";", SymbolValue: ":", Action: KeyboardActionCharacter, Width: 0},
-		},
-		// Terceira linha de letras
-		{
-
-			{Display: "Z", Value: "z", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "X", Value: "x", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "C", Value: "c", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "V", Value: "v", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "B", Value: "b", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "N", Value: "n", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "M", Value: "m", SymbolValue: "", Action: KeyboardActionCharacter, Width: 0},
-			{Display: ",", Value: ",", SymbolValue: "<", Action: KeyboardActionCharacter, Width: 0},
-			{Display: ".", Value: ".", SymbolValue: ">", Action: KeyboardActionCharacter, Width: 0},
-			{Display: "/", Value: "/", SymbolValue: "?", Action: KeyboardActionCharacter, Width: 0},
-		},
-		// Linha de ações
-		{
-			{Display: "Shift", Value: "", SymbolValue: "", Action: KeyboardActionShift, Width: 0},
-			{Display: "Sym", Value: "", SymbolValue: "", Action: KeyboardActionSymbols, Width: 0},
-			{Display: "Space", Value: " ", SymbolValue: " ", Action: KeyboardActionSpace, Width: 0},
-			{Display: "Back", Value: "", SymbolValue: "", Action: KeyboardActionBackspace, Width: 0},
-			{Display: "Enter", Value: "", SymbolValue: "", Action: KeyboardActionEnter, Width: 0},
-			{Display: "Cancel", Value: "", SymbolValue: "", Action: KeyboardActionCancel, Width: 0},
-		},
-	}
 }
 
 // Show exibe o teclado virtual
@@ -262,8 +258,6 @@ func (vk *VirtualKeyboard) Render() {
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(vk.ID + "_container"),
 		Floating: clay.FloatingElementConfig{
-			// ZIndex: 1000, // Z-index alto para sobreposição
-			// ParentId: clay.ID(vk.parentId).Id,
 			AttachTo: clay.ATTACH_TO_PARENT,
 			Offset:   clay.Vector2{X: 0, Y: -50},
 			AttachPoints: clay.FloatingAttachPoints{
@@ -283,7 +277,7 @@ func (vk *VirtualKeyboard) Render() {
 		CornerRadius:    clay.CornerRadiusAll(vk.config.CornerRadius),
 		BackgroundColor: vk.config.BackgroundColor,
 	}, func() {
-		// Renderizar cada linha de teclas
+
 		for rowIndex, row := range vk.keys {
 			vk.renderKeyRow(rowIndex, row)
 		}
@@ -291,8 +285,6 @@ func (vk *VirtualKeyboard) Render() {
 }
 
 func (vk *VirtualKeyboard) renderKeyRow(rowIndex int, row []Key) {
-	// rowWidth := vk.calculateRowWidth(row)
-
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(vk.ID + "_row_" + string(rune(rowIndex+'0'))),
 		Layout: clay.LayoutConfig{
@@ -304,7 +296,7 @@ func (vk *VirtualKeyboard) renderKeyRow(rowIndex int, row []Key) {
 			},
 		},
 	}, func() {
-		// Renderizar cada tecla na linha
+
 		for colIndex, key := range row {
 			vk.renderKey(rowIndex, colIndex, key)
 		}
@@ -334,7 +326,6 @@ func (vk *VirtualKeyboard) renderKey(rowIndex, colIndex int, key Key) {
 		textColor = vk.config.KeyButtonStyle.TextColor
 	}
 
-	// Largura da tecla (padrão ou customizada)
 	keyWidth := vk.config.KeyButtonStyle.Width
 	if key.Width > 0 {
 		keyWidth = key.Width
@@ -356,7 +347,7 @@ func (vk *VirtualKeyboard) renderKey(rowIndex, colIndex int, key Key) {
 		CornerRadius:    clay.CornerRadiusAll(vk.config.KeyButtonStyle.CornerRadius),
 		BackgroundColor: backgroundColor,
 	}, func() {
-		// Texto da tecla
+
 		displayText := key.Display
 
 		// Determine what to display based on current mode

@@ -71,6 +71,14 @@ type BorderRadius struct {
 	XLarge float32
 }
 
+type BorderWidth struct {
+	XSmall uint16
+	Small  uint16
+	Medium uint16
+	Large  uint16
+	XLarge uint16
+}
+
 // Elevation define configurações de elevação/sombra
 type Elevation struct {
 	Low    uint8
@@ -80,11 +88,17 @@ type Elevation struct {
 
 // DesignSystem contém todas as configurações de design
 type DesignSystem struct {
-	Colors       ColorPalette
-	Typography   Typography
-	Spacing      Spacing
-	BorderRadius BorderRadius
-	Elevation    Elevation
+	Colors     ColorPalette
+	Typography Typography
+	Spacing    Spacing
+	Border     Border
+	Elevation  Elevation
+}
+
+type Border struct {
+	Radius BorderRadius
+	Width  BorderWidth
+	Color  clay.Color
 }
 
 // DefaultDesignSystem retorna o design system padrão baseado no tema atual da aplicação
@@ -138,12 +152,22 @@ func DefaultDesignSystem() DesignSystem {
 			LG: 20,
 			XL: 32,
 		},
-		BorderRadius: BorderRadius{
-			Small:  4,
-			Medium: 8,
-			Large:  12,
-			XLarge: 16,
+		Border: Border{
+			Radius: BorderRadius{
+				Small:  4,
+				Medium: 8,
+				Large:  12,
+				XLarge: 16,
+			},
+			Width: BorderWidth{
+				XSmall: 1,
+				Small:  2,
+				Medium: 3,
+				Large:  4,
+				XLarge: 5,
+			},
 		},
+
 		Elevation: Elevation{
 			Low:    50,
 			Medium: 100,

@@ -166,7 +166,6 @@ func (it *InputText) OpenKeyboard() {
 
 func (it *InputText) CloseKeyboard() {
 	if it.keyboard != nil {
-		log.Printf("InputText: Closing virtual keyboard for '%s'", it.ID)
 		it.keyboard.Hide()
 	}
 }

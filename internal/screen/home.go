@@ -153,7 +153,7 @@ func (h *Home) Render() {
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
 					Width:  clay.SizingPercent(0.35),
-					Height: clay.SizingPercent(1.0),
+					Height: clay.SizingGrow(0),
 				},
 				Padding:         containerStyle.Padding,
 				ChildGap:        spacing.SM,
@@ -161,6 +161,7 @@ func (h *Home) Render() {
 			},
 			CornerRadius:    clay.CornerRadiusAll(containerStyle.CornerRadius),
 			BackgroundColor: containerStyle.BackgroundColor,
+			Border:          containerStyle.Border,
 		}, func() {
 			// Título
 			clay.UI()(clay.ElementDeclaration{
@@ -175,7 +176,7 @@ func (h *Home) Render() {
 				widgets.TextLarge("Games list", ds.Colors.TextPrimary)
 			})
 
-			h.checkboxList.Render(core.WINDOW_HEIGHT - 220)
+			h.checkboxList.Render()
 		})
 
 		// Container para botões (lado direito)
@@ -184,7 +185,7 @@ func (h *Home) Render() {
 			Layout: clay.LayoutConfig{
 				Sizing: clay.Sizing{
 					Width:  clay.SizingPercent(0.65),
-					Height: clay.SizingPercent(1.0),
+					Height: clay.SizingGrow(0),
 				},
 				Padding:         containerStyle.Padding,
 				ChildGap:        spacing.MD,
@@ -193,10 +194,7 @@ func (h *Home) Render() {
 					X: clay.ALIGN_X_CENTER,
 				},
 			},
-			Border: clay.BorderElementConfig{
-				Width: clay.BorderWidth{Left: 5, Right: 5, Top: 5, Bottom: 5},
-				Color: theme.GetInputTextStyle().BorderColor,
-			},
+			Border:          containerStyle.Border,
 			CornerRadius:    clay.CornerRadiusAll(containerStyle.CornerRadius),
 			BackgroundColor: containerStyle.BackgroundColor,
 		}, func() {

@@ -34,10 +34,8 @@ type CheckboxListStyle struct {
 	Padding         clay.Padding
 	ChildGap        uint16
 	BackgroundColor clay.Color
-	MaxHeight       float32
 	ScrollOffset    int
 	CheckboxSize    float32
-	ItemHeight      float32
 	CornerRadius    float32
 
 	// Cores para diferentes estados dos itens
@@ -56,9 +54,11 @@ type CheckboxListStyle struct {
 
 // ContainerStyle define estilos para containers
 type ContainerStyle struct {
+	Image           clay.ImageElementConfig
 	BackgroundColor clay.Color
 	Padding         clay.Padding
 	CornerRadius    float32
+	Border          clay.BorderElementConfig
 }
 
 // GetButtonStyle retorna a configuração de estilo para um botão baseado no tipo
@@ -66,7 +66,7 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 	baseStyle := ButtonStyle{
 		Padding:      clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.MD, Bottom: ds.Spacing.MD},
 		TextSize:     ds.Typography.Base,
-		CornerRadius: ds.BorderRadius.Large,
+		CornerRadius: ds.Border.Radius.Large,
 	}
 
 	switch styleType {
@@ -122,13 +122,11 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 	return CheckboxListStyle{
 		Padding:         clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
-		ChildGap:        ds.Spacing.XS,
+		ChildGap:        ds.Spacing.SM,
 		BackgroundColor: ds.Colors.SurfaceSecondary,
-		MaxHeight:       300,
 		ScrollOffset:    0,
 		CheckboxSize:    20,
-		ItemHeight:      35,
-		CornerRadius:    ds.BorderRadius.Medium,
+		CornerRadius:    ds.Border.Radius.Medium,
 
 		// Estados dos itens
 		ItemNormalBg:     clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
@@ -209,7 +207,7 @@ func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 	return InputTextStyle{
 		Padding:          clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
 		TextSize:         ds.Typography.Base,
-		CornerRadius:     ds.BorderRadius.Medium,
+		CornerRadius:     ds.Border.Radius.Medium,
 		BorderWidth:      1,
 		BackgroundColor:  clay.Color{R: 80, G: 85, B: 95, A: 120}, // Lighter background
 		BorderColor:      ds.Colors.Border,
@@ -229,7 +227,7 @@ func (ds DesignSystem) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
 	return VirtualKeyboardStyle{
 		BackgroundColor: clay.Color{R: 45, G: 47, B: 59, A: 180}, // Semi-transparent dark
 		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
-		CornerRadius:    ds.BorderRadius.Large,
+		CornerRadius:    ds.Border.Radius.Large,
 		KeySpacing:      ds.Spacing.XS,
 		MaxWidth:        480,
 		MaxHeight:       200,
@@ -238,7 +236,7 @@ func (ds DesignSystem) GetVirtualKeyboardStyle() VirtualKeyboardStyle {
 			Height:       36,
 			Padding:      clay.Padding{Left: 4, Right: 4, Top: 4, Bottom: 4},
 			TextSize:     ds.Typography.Small,
-			CornerRadius: ds.BorderRadius.Small,
+			CornerRadius: ds.Border.Radius.Small,
 
 			// Estado normal
 			BackgroundColor: ds.Colors.SurfaceSecondary,
@@ -263,6 +261,10 @@ func (ds DesignSystem) GetContentContainerStyle() ContainerStyle {
 	return ContainerStyle{
 		BackgroundColor: ds.Colors.Surface,
 		Padding:         clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.LG, Bottom: ds.Spacing.LG},
-		CornerRadius:    ds.BorderRadius.Medium,
+		CornerRadius:    ds.Border.Radius.Medium,
+		Border: clay.BorderElementConfig{
+			Width: clay.BorderWidth{Left: ds.Border.Width.Small, Right: ds.Border.Width.Small, Top: ds.Border.Width.Small, Bottom: ds.Border.Width.Small},
+			Color: ds.Colors.Border,
+		},
 	}
 }
