@@ -361,7 +361,7 @@ func (vk *VirtualKeyboard) renderKey(rowIndex, colIndex int, key Key) {
 			}
 		}
 
-		Text(displayText, vk.config.KeyButtonStyle.TextSize, textColor)
+		Text(displayText, vk.config.KeyButtonStyle.FontSize, textColor)
 	})
 }
 

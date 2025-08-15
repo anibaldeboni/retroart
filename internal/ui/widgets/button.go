@@ -93,7 +93,7 @@ func (b *Button) Render() {
 		BackgroundColor: color.BackgroundColor,
 	}, func() {
 		// Texto do botão centralizado com cor do estado atual
-		Text(b.Label, b.Config.TextSize, color.TextColor)
+		Text(b.Label, b.Config.FontSize, color.TextColor)
 	})
 
 	log.Printf("Button: render id=%s focused=%t", b.ID, b.focused)

@@ -230,10 +230,10 @@ func (it *InputText) Render() {
 		displayText := it.getDisplayText()
 		if displayText == "" && it.Placeholder != "" {
 			// Renderizar placeholder
-			Text(it.Placeholder, it.Config.TextSize, it.Config.PlaceholderColor)
+			Text(it.Placeholder, it.Config.FontSize, it.Config.PlaceholderColor)
 		} else {
 			// Renderizar texto atual com cursor
-			Text(displayText, it.Config.TextSize, textColor)
+			Text(displayText, it.Config.FontSize, textColor)
 		}
 	})
 
