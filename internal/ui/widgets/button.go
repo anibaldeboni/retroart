@@ -13,17 +13,11 @@ type Button struct {
 	Label   string
 	Width   clay.SizingAxis
 	Height  clay.SizingAxis
-	Config  ButtonConfig
+	Config  theme.ButtonStyle
 	OnClick func()
 	focused bool
 	enabled bool
 }
-
-// ButtonConfig contém configurações para diferentes estados do botão
-type ButtonConfig = theme.ButtonStyle
-
-// ButtonState define a aparência de um estado específico do botão
-type ButtonState = theme.ButtonState
 
 // NewButton cria um novo botão usando o design system
 func NewButton(id, label string, width, height clay.SizingAxis, styleType theme.ComponentStyleType, onClick func()) *Button {
@@ -63,17 +57,20 @@ func (b *Button) HandleInput(inputType input.InputType) bool {
 	return false
 }
 
-// Render renderiza o botão usando o sistema stateful
-func (b *Button) Render() {
-	// Determinar estado atual baseado no foco
-	var currentState ButtonState
-	if b.focused {
-		currentState = b.Config.Focused
-	} else {
-		currentState = b.Config.Normal
+func (n *Button) buttonColor() theme.ButtonColor {
+	if n.focused {
+		return n.Config.Focused
 	}
+	return n.Config.Normal
+}
 
-	log.Printf("Creating new button: %s (focused: %t)", b.ID, b.focused)
+// Render draws the button widget on the UI using the current configuration and state.
+// It sets up the layout, background color, corner radius, and centers the label text
+// with the appropriate color based on the button's state. Debug logs are emitted
+// before and after rendering to track button creation and focus state.
+func (b *Button) Render() {
+	color := b.buttonColor()
+
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(b.ID),
 		Layout: clay.LayoutConfig{
@@ -88,12 +85,13 @@ func (b *Button) Render() {
 			},
 		},
 		CornerRadius:    clay.CornerRadiusAll(b.Config.CornerRadius),
-		BackgroundColor: currentState.BackgroundColor,
+		BackgroundColor: color.BackgroundColor,
 	}, func() {
 		// Texto do botão centralizado com cor do estado atual
-		Text(b.Label, b.Config.TextSize, currentState.TextColor)
+		Text(b.Label, b.Config.TextSize, color.TextColor)
 	})
-	log.Printf("New button created: %s", b.ID)
+
+	log.Printf("Button: render id=%s focused=%t", b.ID, b.focused)
 }
 
 // SetEnabled habilita/desabilita o botão
