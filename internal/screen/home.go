@@ -32,19 +32,36 @@ func NewHome() *Home {
 // initializeWidgets cria todos os widgets focáveis
 func (h *Home) initializeWidgets() {
 	h.buttons = []*widgets.Button{
-		widgets.NewButton("next-button", "Second screen", theme.StylePrimary, func() {
-			if h.navigator != nil {
-				h.navigator.NavigateTo("second")
-			}
-		}),
-		widgets.NewButton("exit-button", "Exit", theme.StyleDanger, func() {
-			log.Println("Exit button pressed")
-			os.Exit(0)
-		}),
-		widgets.NewButton("test-selected-button", "Show Selected", theme.StyleSecondary, func() {
-			selectedItems := h.checkboxList.GetSelectedItems()
-			log.Printf("Selected games: %v", selectedItems)
-		}),
+		widgets.NewButton(
+			"next-button",
+			"Second screen",
+			clay.SizingFixed(220),
+			clay.SizingFixed(45),
+			theme.StylePrimary,
+			func() {
+				if h.navigator != nil {
+					h.navigator.NavigateTo("second")
+				}
+			}),
+		widgets.NewButton(
+			"exit-button",
+			"Exit",
+			clay.SizingFixed(220),
+			clay.SizingFixed(45),
+			theme.StyleDanger, func() {
+				log.Println("Exit button pressed")
+				os.Exit(0)
+			}),
+		widgets.NewButton(
+			"test-selected-button",
+			"Show Selected",
+			clay.SizingFixed(220),
+			clay.SizingFixed(45),
+			theme.StyleSecondary,
+			func() {
+				selectedItems := h.checkboxList.GetSelectedItems()
+				log.Printf("Selected games: %v", selectedItems)
+			}),
 	}
 
 	// Criar dados de teste para o checkbox list
@@ -67,13 +84,20 @@ func (h *Home) initializeWidgets() {
 		{Label: "PlayStation", Value: "game16", Selected: false},
 	}
 
-	h.checkboxList = widgets.NewCheckboxList("consoles-checkbox-list", testItems)
+	h.checkboxList = widgets.NewCheckboxList(
+		"consoles-checkbox-list",
+		clay.SizingGrow(0),
+		clay.SizingGrow(0),
+		testItems,
+	)
 
 	// Criar campo de entrada de texto
 	h.inputText = widgets.NewInputText(
 		"test-input-text",
 		"Enter game name...",
 		50,
+		clay.SizingFixed(300),
+		clay.SizingFixed(40),
 		func(text string) {
 			log.Printf("InputText changed: %s", text)
 		},
@@ -168,6 +192,10 @@ func (h *Home) Render() {
 				ChildAlignment: clay.ChildAlignment{
 					X: clay.ALIGN_X_CENTER,
 				},
+			},
+			Border: clay.BorderElementConfig{
+				Width: clay.BorderWidth{Left: 5, Right: 5, Top: 5, Bottom: 5},
+				Color: theme.GetInputTextStyle().BorderColor,
 			},
 			CornerRadius:    clay.CornerRadiusAll(containerStyle.CornerRadius),
 			BackgroundColor: containerStyle.BackgroundColor,

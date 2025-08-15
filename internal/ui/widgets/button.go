@@ -11,6 +11,8 @@ import (
 type Button struct {
 	ID      string
 	Label   string
+	Width   clay.SizingAxis
+	Height  clay.SizingAxis
 	Config  ButtonConfig
 	OnClick func()
 	focused bool
@@ -24,10 +26,12 @@ type ButtonConfig = theme.ButtonStyle
 type ButtonState = theme.ButtonState
 
 // NewButton cria um novo botão usando o design system
-func NewButton(id, label string, styleType theme.ComponentStyleType, onClick func()) *Button {
+func NewButton(id, label string, width, height clay.SizingAxis, styleType theme.ComponentStyleType, onClick func()) *Button {
 	return &Button{
 		ID:      id,
 		Label:   label,
+		Width:   width,
+		Height:  height,
 		Config:  theme.GetButtonStyle(styleType),
 		OnClick: onClick,
 		enabled: true,
@@ -74,8 +78,8 @@ func (b *Button) Render() {
 		Id: clay.ID(b.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
-				Width:  b.Config.Sizing.Width,
-				Height: b.Config.Sizing.Height,
+				Width:  b.Width,
+				Height: b.Height,
 			},
 			Padding: b.Config.Padding,
 			ChildAlignment: clay.ChildAlignment{

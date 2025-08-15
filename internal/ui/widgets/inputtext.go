@@ -13,6 +13,8 @@ type InputText struct {
 	Text        string
 	Placeholder string
 	MaxLength   int
+	Width       clay.SizingAxis
+	Height      clay.SizingAxis
 	CursorPos   int
 	Config      theme.InputTextStyle
 	OnChange    func(text string)
@@ -24,11 +26,13 @@ type InputText struct {
 }
 
 // NewInputText cria um novo campo de entrada de texto
-func NewInputText(id, placeholder string, maxLength int, onChange func(string), onSubmit func(string)) *InputText {
+func NewInputText(id, placeholder string, maxLength int, width, height clay.SizingAxis, onChange, onSubmit func(string)) *InputText {
 	inputText := &InputText{
 		ID:          id,
 		Text:        "",
 		Placeholder: placeholder,
+		Width:       width,
+		Height:      height,
 		MaxLength:   maxLength,
 		CursorPos:   0,
 		Config:      theme.GetInputTextStyle(),
@@ -203,55 +207,35 @@ func (it *InputText) Render() {
 
 	log.Printf("InputText: Rendering '%s' (focused: %t)", it.ID, it.focused)
 
-	// Outer container que simula a borda
 	clay.UI()(clay.ElementDeclaration{
 		Id: clay.ID(it.ID),
 		Layout: clay.LayoutConfig{
 			Sizing: clay.Sizing{
-				Width:  it.Config.Sizing.Width,
-				Height: it.Config.Sizing.Height,
+				Width:  it.Width,
+				Height: it.Height,
 			},
-			Padding: clay.Padding{
-				Left:   it.Config.BorderWidth,
-				Right:  it.Config.BorderWidth,
-				Top:    it.Config.BorderWidth,
-				Bottom: it.Config.BorderWidth,
-			},
+			Padding: it.Config.Padding,
 			ChildAlignment: clay.ChildAlignment{
-				X: clay.ALIGN_X_CENTER,
+				X: clay.ALIGN_X_LEFT,
 				Y: clay.ALIGN_Y_CENTER,
 			},
 		},
-		CornerRadius:    clay.CornerRadiusAll(it.Config.CornerRadius),
-		BackgroundColor: borderColor, // A "borda" é o background do container externo
+		CornerRadius:    clay.CornerRadiusAll(it.Config.CornerRadius - float32(it.Config.BorderWidth)),
+		BackgroundColor: backgroundColor,
+		Border: clay.BorderElementConfig{
+			Width: clay.BorderWidth{Left: it.Config.BorderWidth, Right: it.Config.BorderWidth, Top: it.Config.BorderWidth, Bottom: it.Config.BorderWidth},
+			Color: borderColor,
+		},
 	}, func() {
-		// Inner container com o conteúdo real
-		clay.UI()(clay.ElementDeclaration{
-			Id: clay.ID(it.ID),
-			Layout: clay.LayoutConfig{
-				Sizing: clay.Sizing{
-					Width:  clay.SizingPercent(1.0),
-					Height: clay.SizingPercent(1.0),
-				},
-				Padding: it.Config.Padding,
-				ChildAlignment: clay.ChildAlignment{
-					X: clay.ALIGN_X_LEFT,
-					Y: clay.ALIGN_Y_CENTER,
-				},
-			},
-			CornerRadius:    clay.CornerRadiusAll(it.Config.CornerRadius - float32(it.Config.BorderWidth)),
-			BackgroundColor: backgroundColor,
-		}, func() {
-			// Renderizar texto ou placeholder
-			displayText := it.getDisplayText()
-			if displayText == "" && it.Placeholder != "" {
-				// Renderizar placeholder
-				Text(it.Placeholder, it.Config.TextSize, it.Config.PlaceholderColor)
-			} else {
-				// Renderizar texto atual com cursor
-				Text(displayText, it.Config.TextSize, textColor)
-			}
-		})
+		// Renderizar texto ou placeholder
+		displayText := it.getDisplayText()
+		if displayText == "" && it.Placeholder != "" {
+			// Renderizar placeholder
+			Text(it.Placeholder, it.Config.TextSize, it.Config.PlaceholderColor)
+		} else {
+			// Renderizar texto atual com cursor
+			Text(displayText, it.Config.TextSize, textColor)
+		}
 	})
 
 	// Renderizar teclado virtual se estiver visível

@@ -22,7 +22,6 @@ type ButtonState struct {
 
 // ButtonStyle contém configurações completas para botões
 type ButtonStyle struct {
-	Sizing       clay.Sizing
 	Padding      clay.Padding
 	TextSize     uint16
 	CornerRadius float32
@@ -32,7 +31,6 @@ type ButtonStyle struct {
 
 // CheckboxListStyle contém configurações para checkbox lists
 type CheckboxListStyle struct {
-	Sizing          clay.Sizing
 	Padding         clay.Padding
 	ChildGap        uint16
 	BackgroundColor clay.Color
@@ -40,6 +38,7 @@ type CheckboxListStyle struct {
 	ScrollOffset    int
 	CheckboxSize    float32
 	ItemHeight      float32
+	CornerRadius    float32
 
 	// Cores para diferentes estados dos itens
 	ItemNormalBg     clay.Color
@@ -65,10 +64,6 @@ type ContainerStyle struct {
 // GetButtonStyle retorna a configuração de estilo para um botão baseado no tipo
 func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle {
 	baseStyle := ButtonStyle{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingFixed(220),
-			Height: clay.SizingFixed(45),
-		},
 		Padding:      clay.Padding{Left: ds.Spacing.LG, Right: ds.Spacing.LG, Top: ds.Spacing.MD, Bottom: ds.Spacing.MD},
 		TextSize:     ds.Typography.Base,
 		CornerRadius: ds.BorderRadius.Large,
@@ -126,17 +121,14 @@ func (ds DesignSystem) GetButtonStyle(styleType ComponentStyleType) ButtonStyle 
 // GetCheckboxListStyle retorna a configuração de estilo para checkbox lists
 func (ds DesignSystem) GetCheckboxListStyle() CheckboxListStyle {
 	return CheckboxListStyle{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingGrow(1),
-			Height: clay.SizingFixed(300),
-		},
 		Padding:         clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
 		ChildGap:        ds.Spacing.XS,
 		BackgroundColor: ds.Colors.SurfaceSecondary,
 		MaxHeight:       300,
 		ScrollOffset:    0,
-		CheckboxSize:    18,
+		CheckboxSize:    20,
 		ItemHeight:      35,
+		CornerRadius:    ds.BorderRadius.Medium,
 
 		// Estados dos itens
 		ItemNormalBg:     clay.Color{R: 0, G: 0, B: 0, A: 0}, // Transparente
@@ -215,10 +207,6 @@ type KeyButtonStyle struct {
 // GetInputTextStyle retorna a configuração de estilo para campos de texto
 func (ds DesignSystem) GetInputTextStyle() InputTextStyle {
 	return InputTextStyle{
-		Sizing: clay.Sizing{
-			Width:  clay.SizingFixed(300),
-			Height: clay.SizingFixed(40),
-		},
 		Padding:          clay.Padding{Left: ds.Spacing.MD, Right: ds.Spacing.MD, Top: ds.Spacing.SM, Bottom: ds.Spacing.SM},
 		TextSize:         ds.Typography.Base,
 		CornerRadius:     ds.BorderRadius.Medium,

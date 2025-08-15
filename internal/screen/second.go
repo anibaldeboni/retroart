@@ -2,6 +2,7 @@ package screen
 
 import (
 	"log"
+	"os"
 	"retroart-sdl2/internal/core"
 	"retroart-sdl2/internal/input"
 	"retroart-sdl2/internal/theme"
@@ -27,17 +28,20 @@ func NewSecond() *Second {
 
 func (ss *Second) initializeWidgets() {
 	ss.buttons = []*widgets.Button{
-		widgets.NewButton("back-btn", "Back", theme.StylePrimary, func() {
-			if ss.navigator != nil {
-				ss.navigator.GoBack()
-			}
-		}),
-		widgets.NewButton("options-btn", "Options", theme.StyleSecondary, func() {
-			// Ação para opções (pode ser implementada futuramente)
-		}),
-		widgets.NewButton("exit-btn", "Exit", theme.StyleDanger, func() {
-			// Ação para sair
-		}),
+		widgets.NewButton("back-btn", "Back", clay.SizingFixed(220),
+			clay.SizingFixed(45), theme.StylePrimary, func() {
+				if ss.navigator != nil {
+					ss.navigator.GoBack()
+				}
+			}),
+		widgets.NewButton("options-btn", "Options", clay.SizingFixed(220),
+			clay.SizingFixed(45), theme.StyleSecondary, func() {
+				// Ação para opções (pode ser implementada futuramente)
+			}),
+		widgets.NewButton("exit-btn", "Exit", clay.SizingFixed(220),
+			clay.SizingFixed(45), theme.StyleDanger, func() {
+				os.Exit(0)
+			}),
 	}
 }
 
