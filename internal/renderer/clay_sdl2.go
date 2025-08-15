@@ -105,9 +105,14 @@ func ClayRender(renderer *sdl.Renderer, renderCommands clay.RenderCommandArray, 
 				return err
 			}
 		case clay.RENDER_COMMAND_TYPE_BORDER:
-			// Skip border rendering to avoid RenderGeometry issues
-			// Borders are disabled in our theme anyway
-			slog.Debug("Skipping border rendering for TrimUI compatibility")
+			config := &renderCommand.RenderData.Border
+			color := config.Color
+			if err := renderer.SetDrawColor(uint8(color.R), uint8(color.G), uint8(color.B), uint8(color.A)); err != nil {
+				return err
+			}
+			if err := renderBorderPrimitive(renderer, boundingBox, config); err != nil {
+				return err
+			}
 		case clay.RENDER_COMMAND_TYPE_SCISSOR_START:
 			rect := sdl.Rect{
 				X: int32(boundingBox.X),
@@ -252,4 +257,231 @@ func calculatePixelCoverage(x, y, radius float32) float32 {
 	}
 
 	return float32(coveredSubPixels) / float32(subPixels*subPixels)
+}
+
+// renderBorderPrimitive renders borders using SDL2 primitives only, TrimUI compatible
+func renderBorderPrimitive(renderer *sdl.Renderer, boundingBox clay.BoundingBox, config *clay.BorderRenderData) error {
+	if boundingBox.Width <= 0 || boundingBox.Height <= 0 {
+		return nil
+	}
+
+	maxRadius := min(boundingBox.Width, boundingBox.Height) / 2.0
+
+	// Convert border configuration
+	leftWidth := int32(config.Width.Left)
+	rightWidth := int32(config.Width.Right)
+	topWidth := int32(config.Width.Top)
+	bottomWidth := int32(config.Width.Bottom)
+
+	// Convert corner radii
+	topLeftRadius := min(config.CornerRadius.TopLeft, maxRadius)
+	topRightRadius := min(config.CornerRadius.TopRight, maxRadius)
+	bottomLeftRadius := min(config.CornerRadius.BottomLeft, maxRadius)
+	bottomRightRadius := min(config.CornerRadius.BottomRight, maxRadius)
+
+	// Convert coordinates
+	x := int32(boundingBox.X)
+	y := int32(boundingBox.Y)
+	w := int32(boundingBox.Width)
+	h := int32(boundingBox.Height)
+
+	// Top border (horizontal rectangle avoiding corners)
+	if topWidth > 0 {
+		topRect := sdl.Rect{
+			X: x + int32(topLeftRadius),
+			Y: y,
+			W: w - int32(topLeftRadius) - int32(topRightRadius),
+			H: topWidth,
+		}
+		if topRect.W > 0 {
+			if err := renderer.FillRect(&topRect); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Bottom border (horizontal rectangle avoiding corners)
+	if bottomWidth > 0 {
+		bottomRect := sdl.Rect{
+			X: x + int32(bottomLeftRadius),
+			Y: y + h - bottomWidth,
+			W: w - int32(bottomLeftRadius) - int32(bottomRightRadius),
+			H: bottomWidth,
+		}
+		if bottomRect.W > 0 {
+			if err := renderer.FillRect(&bottomRect); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Left border (vertical rectangle avoiding corners)
+	if leftWidth > 0 {
+		leftRect := sdl.Rect{
+			X: x,
+			Y: y + int32(topLeftRadius),
+			W: leftWidth,
+			H: h - int32(topLeftRadius) - int32(bottomLeftRadius),
+		}
+		if leftRect.H > 0 {
+			if err := renderer.FillRect(&leftRect); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Right border (vertical rectangle avoiding corners)
+	if rightWidth > 0 {
+		rightRect := sdl.Rect{
+			X: x + w - rightWidth,
+			Y: y + int32(topRightRadius),
+			W: rightWidth,
+			H: h - int32(topRightRadius) - int32(bottomRightRadius),
+		}
+		if rightRect.H > 0 {
+			if err := renderer.FillRect(&rightRect); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Render corner borders using our rounded corner approach
+	// Top-left corner
+	if topLeftRadius > 0 && (leftWidth > 0 || topWidth > 0) {
+		if err := renderCornerBorderPrimitive(renderer,
+			float32(x), float32(y), topLeftRadius,
+			float32(leftWidth), float32(topWidth), 0); err != nil {
+			return err
+		}
+	}
+
+	// Top-right corner
+	if topRightRadius > 0 && (rightWidth > 0 || topWidth > 0) {
+		if err := renderCornerBorderPrimitive(renderer,
+			float32(x+w), float32(y), topRightRadius,
+			float32(rightWidth), float32(topWidth), 1); err != nil {
+			return err
+		}
+	}
+
+	// Bottom-right corner
+	if bottomRightRadius > 0 && (rightWidth > 0 || bottomWidth > 0) {
+		if err := renderCornerBorderPrimitive(renderer,
+			float32(x+w), float32(y+h), bottomRightRadius,
+			float32(rightWidth), float32(bottomWidth), 2); err != nil {
+			return err
+		}
+	}
+
+	// Bottom-left corner
+	if bottomLeftRadius > 0 && (leftWidth > 0 || bottomWidth > 0) {
+		if err := renderCornerBorderPrimitive(renderer,
+			float32(x), float32(y+h), bottomLeftRadius,
+			float32(leftWidth), float32(bottomWidth), 3); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// renderCornerBorderPrimitive renders a corner border using a ring approach
+func renderCornerBorderPrimitive(renderer *sdl.Renderer, cornerX, cornerY, radius, borderWidth1, borderWidth2 float32, cornerIndex int) error {
+	if radius <= 0 || (borderWidth1 <= 0 && borderWidth2 <= 0) {
+		return nil
+	}
+
+	// Calculate circle centers based on corner position
+	var centerX, centerY float32
+	switch cornerIndex {
+	case 0: // Top-left
+		centerX = cornerX + radius
+		centerY = cornerY + radius
+	case 1: // Top-right
+		centerX = cornerX - radius
+		centerY = cornerY + radius
+	case 2: // Bottom-right
+		centerX = cornerX - radius
+		centerY = cornerY - radius
+	case 3: // Bottom-left
+		centerX = cornerX + radius
+		centerY = cornerY - radius
+	}
+
+	// Use the maximum border width for the corner
+	maxBorderWidth := max(borderWidth1, borderWidth2)
+
+	// Render border ring instead of filled circles
+	return renderBorderRing(renderer, int32(centerX), int32(centerY), int32(radius), int32(maxBorderWidth), cornerIndex)
+}
+
+// renderBorderRing renders a ring border (hollow circle) using pixel-by-pixel approach
+// Only renders the quarter that belongs to the specified corner
+func renderBorderRing(renderer *sdl.Renderer, centerX, centerY, outerRadius, borderWidth int32, cornerIndex int) error {
+	if outerRadius <= 0 || borderWidth <= 0 {
+		return nil
+	}
+
+	innerRadius := outerRadius - borderWidth
+	if innerRadius < 0 {
+		innerRadius = 0
+	}
+
+	// Get current drawing color
+	r, g, b, a, err := renderer.GetDrawColor()
+	if err != nil {
+		return err
+	}
+
+	// Render ring by checking each pixel, but only in the correct quadrant
+	for y := -outerRadius - 1; y <= outerRadius+1; y++ {
+		for x := -outerRadius - 1; x <= outerRadius+1; x++ {
+			// Check if this pixel belongs to the correct corner quadrant
+			var inCorrectQuadrant bool
+			switch cornerIndex {
+			case 0: // Top-left: x <= 0, y <= 0
+				inCorrectQuadrant = x <= 0 && y <= 0
+			case 1: // Top-right: x >= 0, y <= 0
+				inCorrectQuadrant = x >= 0 && y <= 0
+			case 2: // Bottom-right: x >= 0, y >= 0
+				inCorrectQuadrant = x >= 0 && y >= 0
+			case 3: // Bottom-left: x <= 0, y >= 0
+				inCorrectQuadrant = x <= 0 && y >= 0
+			}
+
+			if !inCorrectQuadrant {
+				continue
+			}
+
+			distance := float32(x*x + y*y)
+			outerRadiusSquared := float32(outerRadius * outerRadius)
+			innerRadiusSquared := float32(innerRadius * innerRadius)
+
+			// Check if pixel is within the border ring
+			if distance <= outerRadiusSquared && distance >= innerRadiusSquared {
+				// Calculate coverage for anti-aliasing
+				outerCoverage := calculatePixelCoverage(float32(x), float32(y), float32(outerRadius)+0.5)
+				innerCoverage := calculatePixelCoverage(float32(x), float32(y), float32(innerRadius)-0.5)
+				
+				// Border coverage is the difference
+				coverage := outerCoverage - innerCoverage
+				if coverage < 0 {
+					coverage = 0
+				}
+
+				if coverage > 0 {
+					alpha := uint8(float32(a) * coverage)
+					if err := renderer.SetDrawColor(r, g, b, alpha); err != nil {
+						return err
+					}
+					if err := renderer.DrawPoint(centerX+x, centerY+y); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+
+	// Restore original color
+	return renderer.SetDrawColor(r, g, b, a)
 }
